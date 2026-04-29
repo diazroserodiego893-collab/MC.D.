@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Galaxia Azul</title>
+<style>
+    body {
+        margin: 0;
+        overflow: hidden;
+        background: black;
+        font-family: Arial, sans-serif;
+    }
+
+    canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+    }
+
+    .frase {
+        position: absolute;
+        color: white;
+        font-size: 14px;
+        opacity: 0.8;
+        animation: flotar linear infinite;
+        pointer-events: none;
+    }
+
+    @keyframes flotar {
+        from {
+            transform: translateY(100vh);
+        }
+        to {
+            transform: translateY(-10vh);
+        }
+    }
+</style>
+</head>
+<body>
+
+<canvas id="galaxia"></canvas>
+
+<script>
+const canvas = document.getElementById("galaxia");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+// 🌟 ESTRELLAS
+let estrellas = [];
+for (let i = 0; i < 200; i++) {
+    estrellas.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 2
+    });
+}
+
+// 🌠 METEOROS
+let meteoros = [];
+function crearMeteoro() {
+    meteoros.push({
+        x: Math.random() * canvas.width,
+        y: 0,
+        length: Math.random() * 80 + 50,
+        speed: Math.random() * 6 + 4,
+        opacity: 1
+    });
+}
+
+// 🌌 GALAXIA CENTRO
+function dibujarGalaxia() {
+    let grad = ctx.createRadialGradient(
+        canvas.width/2, canvas.height/2, 0,
+        canvas.width/2, canvas.height/2, 400
+    );
+
+    grad.addColorStop(0, "rgba(120, 0, 255, 0.4)");
+    grad.addColorStop(0.5, "rgba(0, 100, 255, 0.2)");
+    grad.addColorStop(1, "transparent");
+
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+// ✨ ANIMACIÓN
+function animar() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // estrellas
+    ctx.fillStyle = "white";
+    estrellas.forEach(e => {
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.size, 0, Math.PI * 2);
+        ctx.fill();
+    });
+
+    // galaxia
+    dibujarGalaxia();
+
+    // meteoros
+    meteoros.forEach((m, i) => {
+        ctx.strokeStyle = `rgba(255,255,255,${m.opacity})`;
+        ctx.lineWidth = 2;
+
+        ctx.beginPath();
+        ctx.moveTo(m.x, m.y);
+        ctx.lineTo(m.x - m.length, m.y - m.length);
+        ctx.stroke();
+
+        m.x += m.speed;
+        m.y += m.speed;
+        m.opacity -= 0.01;
+
+        if (m.opacity <= 0) {
+            meteoros.splice(i, 1);
+        }
+    });
+
+    requestAnimationFrame(animar);
+}
+
+// crear meteoros constantemente
+setInterval(crearMeteoro, 300);
+
+animar();
+
+
+// 💬 FRASES
+const frasesTexto = [
+    "Eres mi universo",
+    "Todo empieza contigo",
+    "Azul infinito",
+    "Entre estrellas te pienso",
+    "Nada brilla como tú",
+    "Eres mi galaxia",
+    "Perdido en ti",
+    "Eres luz",
+    "Siempre tú",
+    "Sin gravedad contigo",
+    "Eres arte",
+    "Más allá del cielo"
+];
+
+function crearFrase() {
+    let frase = document.createElement("div");
+    frase.className = "frase";
+    frase.innerText = frasesTexto[Math.floor(Math.random() * frasesTexto.length)];
+
+    frase.style.left = Math.random() * 100 + "vw";
+    frase.style.animationDuration = (Math.random() * 10 + 10) + "s";
+
+    document.body.appendChild(frase);
+
+    setTimeout(() => {
+        frase.remove();
+    }, 20000);
+}
+
+// MUCHAS FRASES
+setInterval(crearFrase, 300);
+
+</script>
+
+</body>
+</html>
