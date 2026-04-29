@@ -2,165 +2,196 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Galaxia Azul</title>
+<title>Galaxia</title>
 <style>
-    body {
-        margin: 0;
-        overflow: hidden;
-        background: black;
-        font-family: Arial, sans-serif;
-    }
+body{
+    margin:0;
+    overflow:hidden;
+    background:black;
+    font-family:Arial;
+}
 
-    canvas {
-        position: fixed;
-        top: 0;
-        left: 0;
-    }
+canvas{
+    position:fixed;
+    top:0;
+    left:0;
+}
 
-    .frase {
-        position: absolute;
-        color: white;
-        font-size: 14px;
-        opacity: 0.8;
-        animation: flotar linear infinite;
-        pointer-events: none;
-    }
-
-    @keyframes flotar {
-        from {
-            transform: translateY(100vh);
-        }
-        to {
-            transform: translateY(-10vh);
-        }
-    }
+/* FRASES */
+.frase{
+    position:absolute;
+    color:#cfd8ff;
+    font-size:14px;
+    opacity:0.8;
+    pointer-events:none;
+    white-space:nowrap;
+}
 </style>
 </head>
 <body>
 
-<canvas id="galaxia"></canvas>
+<canvas id="c"></canvas>
 
 <script>
-const canvas = document.getElementById("galaxia");
+const canvas = document.getElementById("c");
 const ctx = canvas.getContext("2d");
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+canvas.width = innerWidth;
+canvas.height = innerHeight;
 
-// 🌟 ESTRELLAS
-let estrellas = [];
-for (let i = 0; i < 200; i++) {
+let mouse = {x:0,y:0};
+window.addEventListener("mousemove", e=>{
+    mouse.x = e.clientX - canvas.width/2;
+    mouse.y = e.clientY - canvas.height/2;
+});
+
+/* 🌟 ESTRELLAS */
+let estrellas=[];
+for(let i=0;i<200;i++){
     estrellas.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: Math.random() * 2
+        x:Math.random()*canvas.width,
+        y:Math.random()*canvas.height,
+        size:Math.random()*2,
+        tw:Math.random()*0.05
     });
 }
 
-// 🌠 METEOROS
-let meteoros = [];
-function crearMeteoro() {
+/* 🌠 METEOROS */
+let meteoros=[];
+setInterval(()=>{
     meteoros.push({
-        x: Math.random() * canvas.width,
-        y: 0,
-        length: Math.random() * 80 + 50,
-        speed: Math.random() * 6 + 4,
-        opacity: 1
+        x:Math.random()*canvas.width,
+        y:0,
+        len:Math.random()*80+40,
+        speed:4+Math.random()*3,
+        op:1
+    });
+},1200);
+
+/* 🌌 PARTICULAS GALAXIA */
+let particles=[];
+let total=1200;
+for(let i=0;i<total;i++){
+    particles.push({
+        r:Math.random()*300,
+        angle:Math.random()*Math.PI*2,
+        speed:0.0005+Math.random()*0.001,
+        size:Math.random()*1.5,
+        color:Math.random()>0.5?"#5b7fff":"#8a4dff"
     });
 }
 
-// 🌌 GALAXIA CENTRO
-function dibujarGalaxia() {
-    let grad = ctx.createRadialGradient(
-        canvas.width/2, canvas.height/2, 0,
-        canvas.width/2, canvas.height/2, 400
-    );
+let creationProgress=0;
+let creationDuration=7000;
 
-    grad.addColorStop(0, "rgba(120, 0, 255, 0.4)");
-    grad.addColorStop(0.5, "rgba(0, 100, 255, 0.2)");
-    grad.addColorStop(1, "transparent");
+/* 💬 FRASES */
+const frasesTexto = [
+"Eres mi universo","Todo empieza contigo","Azul infinito","Entre estrellas te pienso",
+"Nada brilla como tú","Eres mi galaxia","Perdido en ti","Eres luz","Siempre tú",
+"Sin gravedad contigo","Eres arte","Más allá del cielo","Eres infinito","Mi paz",
+"Eres destino","Luz en la oscuridad","Contigo todo","Te encuentro en todo",
+"Mi universo eres tú","Eres magia","Eres mi centro","Siempre vuelvo a ti",
+"Mi lugar seguro","Eres eterno","Mi todo","Mi calma","Eres único",
+"Brillas más","Eres especial","Eres razón","Mi cielo","Mi verdad",
+"Te elijo siempre","Mi estrella","Mi mundo","Mi razón","Eres perfecto",
+"Eres real","Mi todo eres tú","Mi infinito","Siempre tú","Mi universo azul",
+"Mi galaxia","Mi espacio","Mi razón de ser","Siempre presente","Mi energía","Mi todo"
+];
 
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+let orbitFrases=[];
+
+function crearFrase(){
+    let el=document.createElement("div");
+    el.className="frase";
+    el.innerText=frasesTexto[Math.floor(Math.random()*frasesTexto.length)];
+
+    document.body.appendChild(el);
+
+    let obj={
+        el,
+        x:Math.random()*innerWidth,
+        y:innerHeight+20,
+        state:"subiendo",
+        angle:Math.random()*Math.PI*2,
+        radius:100+Math.random()*250,
+        speed:0.002+Math.random()*0.003
+    };
+
+    orbitFrases.push(obj);
 }
 
-// ✨ ANIMACIÓN
-function animar() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+setInterval(crearFrase,600);
 
-    // estrellas
-    ctx.fillStyle = "white";
-    estrellas.forEach(e => {
+/* 🎬 ANIMACION */
+function draw(){
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    /* estrellas */
+    estrellas.forEach(s=>{
+        s.size += Math.sin(Date.now()*s.tw)*0.02;
+        ctx.fillStyle="white";
         ctx.beginPath();
-        ctx.arc(e.x, e.y, e.size, 0, Math.PI * 2);
+        ctx.arc(s.x,s.y,s.size,0,Math.PI*2);
         ctx.fill();
     });
 
-    // galaxia
-    dibujarGalaxia();
-
-    // meteoros
-    meteoros.forEach((m, i) => {
-        ctx.strokeStyle = `rgba(255,255,255,${m.opacity})`;
-        ctx.lineWidth = 2;
-
+    /* meteoros */
+    meteoros.forEach((m,i)=>{
+        ctx.strokeStyle="rgba(255,255,255,"+m.op+")";
+        ctx.lineWidth=2;
         ctx.beginPath();
-        ctx.moveTo(m.x, m.y);
-        ctx.lineTo(m.x - m.length, m.y - m.length);
+        ctx.moveTo(m.x,m.y);
+        ctx.lineTo(m.x-m.len,m.y-m.len);
         ctx.stroke();
 
-        m.x += m.speed;
-        m.y += m.speed;
-        m.opacity -= 0.01;
+        m.x+=m.speed;
+        m.y+=m.speed;
+        m.op-=0.01;
+        if(m.op<=0) meteoros.splice(i,1);
+    });
 
-        if (m.opacity <= 0) {
-            meteoros.splice(i, 1);
+    let cx = canvas.width/2 + mouse.x*0.05;
+    let cy = canvas.height/2 + mouse.y*0.05;
+
+    /* CREACION */
+    creationProgress += 16/creationDuration;
+    if(creationProgress>1) creationProgress=1;
+
+    particles.forEach(p=>{
+        let angle = p.angle + Date.now()*p.speed*creationProgress;
+        let r = p.r * creationProgress;
+
+        let x = cx + Math.cos(angle)*r;
+        let y = cy + Math.sin(angle)*r*0.6;
+
+        ctx.fillStyle=p.color;
+        ctx.beginPath();
+        ctx.arc(x,y,p.size,0,Math.PI*2);
+        ctx.fill();
+    });
+
+    /* FRASES */
+    orbitFrases.forEach(f=>{
+        if(f.state==="subiendo"){
+            f.y-=1.2;
+            if(f.y<canvas.height/2+100){
+                f.state="orbita";
+            }
+            f.el.style.transform=`translate(${f.x}px,${f.y}px)`;
+        }else{
+            f.angle+=f.speed;
+            let x = cx + Math.cos(f.angle)*f.radius;
+            let y = cy + Math.sin(f.angle)*f.radius*0.6;
+
+            f.el.style.transform=`translate(${x}px,${y}px)`;
         }
     });
 
-    requestAnimationFrame(animar);
+    requestAnimationFrame(draw);
 }
 
-// crear meteoros constantemente
-setInterval(crearMeteoro, 300);
-
-animar();
-
-
-// 💬 FRASES
-const frasesTexto = [
-    "Eres mi universo",
-    "Todo empieza contigo",
-    "Azul infinito",
-    "Entre estrellas te pienso",
-    "Nada brilla como tú",
-    "Eres mi galaxia",
-    "Perdido en ti",
-    "Eres luz",
-    "Siempre tú",
-    "Sin gravedad contigo",
-    "Eres arte",
-    "Más allá del cielo"
-];
-
-function crearFrase() {
-    let frase = document.createElement("div");
-    frase.className = "frase";
-    frase.innerText = frasesTexto[Math.floor(Math.random() * frasesTexto.length)];
-
-    frase.style.left = Math.random() * 100 + "vw";
-    frase.style.animationDuration = (Math.random() * 10 + 10) + "s";
-
-    document.body.appendChild(frase);
-
-    setTimeout(() => {
-        frase.remove();
-    }, 20000);
-}
-
-// MUCHAS FRASES
-setInterval(crearFrase, 300);
-
+draw();
 </script>
 
 </body>
