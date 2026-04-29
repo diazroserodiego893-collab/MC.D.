@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Galaxia</title>
+
 <style>
 body{
     margin:0;
@@ -11,18 +12,18 @@ body{
     font-family:Arial;
 }
 
+/* canvas */
 canvas{
     position:fixed;
     top:0;
     left:0;
 }
 
-/* FRASES */
+/* frases */
 .frase{
     position:absolute;
     color:#cfd8ff;
     font-size:14px;
-    opacity:0.8;
     pointer-events:none;
     white-space:nowrap;
 }
@@ -30,19 +31,20 @@ canvas{
 </head>
 <body>
 
-<canvas id="c"></canvas>
+<canvas id="canvas"></canvas>
 
 <script>
-const canvas = document.getElementById("c");
+const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-canvas.width = innerWidth;
-canvas.height = innerHeight;
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
+/* 🎮 MOUSE */
 let mouse = {x:0,y:0};
 window.addEventListener("mousemove", e=>{
-    mouse.x = e.clientX - canvas.width/2;
-    mouse.y = e.clientY - canvas.height/2;
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
 });
 
 /* 🌟 ESTRELLAS */
@@ -52,37 +54,21 @@ for(let i=0;i<200;i++){
         x:Math.random()*canvas.width,
         y:Math.random()*canvas.height,
         size:Math.random()*2,
-        tw:Math.random()*0.05
+        speed:Math.random()*0.02
     });
 }
 
-/* 🌠 METEOROS */
-let meteoros=[];
-setInterval(()=>{
-    meteoros.push({
-        x:Math.random()*canvas.width,
-        y:0,
-        len:Math.random()*80+40,
-        speed:4+Math.random()*3,
-        op:1
-    });
-},1200);
-
-/* 🌌 PARTICULAS GALAXIA */
+/* 🌌 GALAXIA (ESPIRAL REAL) */
 let particles=[];
-let total=1200;
-for(let i=0;i<total;i++){
+for(let i=0;i<800;i++){
     particles.push({
-        r:Math.random()*300,
         angle:Math.random()*Math.PI*2,
-        speed:0.0005+Math.random()*0.001,
+        radius:Math.random()*300,
+        speed:0.001 + Math.random()*0.002,
         size:Math.random()*1.5,
         color:Math.random()>0.5?"#5b7fff":"#8a4dff"
     });
 }
-
-let creationProgress=0;
-let creationDuration=7000;
 
 /* 💬 FRASES */
 const frasesTexto = [
@@ -98,7 +84,7 @@ const frasesTexto = [
 "Mi galaxia","Mi espacio","Mi razón de ser","Siempre presente","Mi energía","Mi todo"
 ];
 
-let orbitFrases=[];
+let frases=[];
 
 function crearFrase(){
     let el=document.createElement("div");
@@ -107,63 +93,42 @@ function crearFrase(){
 
     document.body.appendChild(el);
 
-    let obj={
+    frases.push({
         el,
-        x:Math.random()*innerWidth,
-        y:innerHeight+20,
+        x:Math.random()*canvas.width,
+        y:canvas.height + 20,
         state:"subiendo",
         angle:Math.random()*Math.PI*2,
-        radius:100+Math.random()*250,
-        speed:0.002+Math.random()*0.003
-    };
-
-    orbitFrases.push(obj);
+        radius:100 + Math.random()*200,
+        speed:0.002 + Math.random()*0.003
+    });
 }
 
-setInterval(crearFrase,600);
+setInterval(crearFrase,700);
 
 /* 🎬 ANIMACION */
-function draw(){
+function animar(){
 
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
     /* estrellas */
     estrellas.forEach(s=>{
-        s.size += Math.sin(Date.now()*s.tw)*0.02;
+        s.size += Math.sin(Date.now()*s.speed)*0.02;
         ctx.fillStyle="white";
         ctx.beginPath();
         ctx.arc(s.x,s.y,s.size,0,Math.PI*2);
         ctx.fill();
     });
 
-    /* meteoros */
-    meteoros.forEach((m,i)=>{
-        ctx.strokeStyle="rgba(255,255,255,"+m.op+")";
-        ctx.lineWidth=2;
-        ctx.beginPath();
-        ctx.moveTo(m.x,m.y);
-        ctx.lineTo(m.x-m.len,m.y-m.len);
-        ctx.stroke();
+    let cx = canvas.width/2 + (mouse.x - canvas.width/2)*0.05;
+    let cy = canvas.height/2 + (mouse.y - canvas.height/2)*0.05;
 
-        m.x+=m.speed;
-        m.y+=m.speed;
-        m.op-=0.01;
-        if(m.op<=0) meteoros.splice(i,1);
-    });
-
-    let cx = canvas.width/2 + mouse.x*0.05;
-    let cy = canvas.height/2 + mouse.y*0.05;
-
-    /* CREACION */
-    creationProgress += 16/creationDuration;
-    if(creationProgress>1) creationProgress=1;
-
+    /* galaxia */
     particles.forEach(p=>{
-        let angle = p.angle + Date.now()*p.speed*creationProgress;
-        let r = p.r * creationProgress;
+        p.angle += p.speed;
 
-        let x = cx + Math.cos(angle)*r;
-        let y = cy + Math.sin(angle)*r*0.6;
+        let x = cx + Math.cos(p.angle) * p.radius;
+        let y = cy + Math.sin(p.angle) * p.radius * 0.6;
 
         ctx.fillStyle=p.color;
         ctx.beginPath();
@@ -171,27 +136,33 @@ function draw(){
         ctx.fill();
     });
 
-    /* FRASES */
-    orbitFrases.forEach(f=>{
+    /* frases */
+    frases.forEach(f=>{
         if(f.state==="subiendo"){
-            f.y-=1.2;
-            if(f.y<canvas.height/2+100){
+            f.y -= 1.5;
+
+            if(f.y < canvas.height/2){
                 f.state="orbita";
             }
-            f.el.style.transform=`translate(${f.x}px,${f.y}px)`;
-        }else{
-            f.angle+=f.speed;
-            let x = cx + Math.cos(f.angle)*f.radius;
-            let y = cy + Math.sin(f.angle)*f.radius*0.6;
 
-            f.el.style.transform=`translate(${x}px,${y}px)`;
+            f.el.style.left = f.x + "px";
+            f.el.style.top = f.y + "px";
+
+        }else{
+            f.angle += f.speed;
+
+            let x = cx + Math.cos(f.angle) * f.radius;
+            let y = cy + Math.sin(f.angle) * f.radius * 0.6;
+
+            f.el.style.left = x + "px";
+            f.el.style.top = y + "px";
         }
     });
 
-    requestAnimationFrame(draw);
+    requestAnimationFrame(animar);
 }
 
-draw();
+animar();
 </script>
 
 </body>
