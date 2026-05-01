@@ -31,26 +31,22 @@ function resize(){
 resize();
 window.addEventListener("resize", resize);
 
-/* 🎮 POSICIÓN DE CÁMARA */
-let camX = 0;
-let camY = 0;
+/* 🎮 MOUSE RELATIVO */
+let mouse = {x:0,y:0};
 
-/* 🎮 CONTROL CON MOUSE (movimiento libre) */
 window.addEventListener("mousemove", e=>{
-    let dx = (e.clientX - canvas.width/2);
-    let dy = (e.clientY - canvas.height/2);
-
-    camX += dx * 0.0005;
-    camY += dy * 0.0005;
+    mouse.x = (e.clientX - canvas.width/2) / canvas.width;
+    mouse.y = (e.clientY - canvas.height/2) / canvas.height;
 });
 
 /* 🌟 ESTRELLAS */
 let estrellas=[];
 for(let i=0;i<200;i++){
     estrellas.push({
-        x:(Math.random()-0.5)*2000,
-        y:(Math.random()-0.5)*2000,
-        size:Math.random()*2
+        x:Math.random()*canvas.width,
+        y:Math.random()*canvas.height,
+        size:Math.random()*2,
+        depth:Math.random()
     });
 }
 
@@ -62,7 +58,8 @@ for(let i=0;i<1200;i++){
         radius:Math.random()*300,
         speed:0.001 + Math.random()*0.002,
         size:Math.random()*1.5,
-        color:Math.random()>0.5?"#5b8cff":"#8a4dff"
+        color:Math.random()>0.5?"#5b8cff":"#8a4dff",
+        depth:Math.random()
     });
 }
 
@@ -75,10 +72,10 @@ function draw(){
     let cx = canvas.width/2;
     let cy = canvas.height/2;
 
-    /* ✨ ESTRELLAS (con movimiento de cámara) */
+    /* ✨ ESTRELLAS (parallax) */
     estrellas.forEach(s=>{
-        let x = cx + s.x - camX*200;
-        let y = cy + s.y - camY*200;
+        let x = s.x + mouse.x * 50 * s.depth;
+        let y = s.y + mouse.y * 50 * s.depth;
 
         ctx.fillStyle="white";
         ctx.beginPath();
@@ -90,12 +87,16 @@ function draw(){
     particles.forEach(p=>{
         p.angle += p.speed;
 
-        let x = cx + Math.cos(p.angle)*p.radius - camX*400;
-        let y = cy + Math.sin(p.angle)*p.radius*0.6 - camY*400;
+        let x = Math.cos(p.angle)*p.radius;
+        let y = Math.sin(p.angle)*p.radius*0.6;
+
+        /* efecto profundidad */
+        x += mouse.x * 100 * p.depth;
+        y += mouse.y * 100 * p.depth;
 
         ctx.fillStyle=p.color;
         ctx.beginPath();
-        ctx.arc(x,y,p.size,0,Math.PI*2);
+        ctx.arc(cx + x, cy + y, p.size, 0, Math.PI*2);
         ctx.fill();
     });
 
