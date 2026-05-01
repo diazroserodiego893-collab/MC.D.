@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Galaxia Final</title>
+<title>Galaxia PRO</title>
+
 <style>
 body{
     margin:0;
@@ -32,7 +33,7 @@ window.addEventListener("resize", resize);
 /* 🎮 CONTROL */
 let angleX = 0;
 let angleY = 0;
-let zoom = 600;
+let zoom = 700;
 
 let dragging = false;
 
@@ -49,22 +50,22 @@ window.addEventListener("mousemove", e=>{
 window.addEventListener("wheel", e=>{
     zoom += e.deltaY * 0.3;
     if(zoom < 300) zoom = 300;
-    if(zoom > 1200) zoom = 1200;
+    if(zoom > 1400) zoom = 1400;
 });
 
 /* ⭐ ESTRELLAS FONDO */
 let stars=[];
-for(let i=0;i<800;i++){
+for(let i=0;i<1000;i++){
     stars.push({
-        x:(Math.random()-0.5)*3000,
-        y:(Math.random()-0.5)*3000,
-        z:(Math.random()-0.5)*3000,
+        x:(Math.random()-0.5)*4000,
+        y:(Math.random()-0.5)*4000,
+        z:(Math.random()-0.5)*4000,
         size:Math.random()*1.5,
         blink:Math.random()*100
     });
 }
 
-/* 🌠 ESTRELLAS FUGACES (máx 3) */
+/* 🌠 ESTRELLAS FUGACES */
 let shootingStars=[];
 
 function spawnShootingStar(){
@@ -73,54 +74,54 @@ function spawnShootingStar(){
     shootingStars.push({
         x:Math.random()*canvas.width,
         y:Math.random()*canvas.height/2,
-        vx: -10 - Math.random()*5,
-        vy: 5 + Math.random()*3,
+        vx:-12 - Math.random()*6,
+        vy:6 + Math.random()*3,
         life:0,
-        maxLife:60
+        maxLife:50
     });
 }
 
 setInterval(()=>{
-    if(Math.random() < 0.5){
+    if(Math.random() < 0.6){
         spawnShootingStar();
     }
-}, 800);
+}, 700);
 
 /* 🌌 GALAXIA */
 let particles=[];
-let total = 6000;
+let total = 7000;
 let arms = 4;
 
 for(let i=0;i<total;i++){
 
-    let radius = Math.random()*400;
+    let radius = Math.random()*450;
     let branch = (i % arms) * (Math.PI*2/arms);
-    let spin = radius * 0.02;
+
+    let spin = radius * 0.04;
     let angle = branch + spin;
 
-    let randomX = (Math.random()-0.5)*20;
-    let randomY = (Math.random()-0.5)*10;
-    let randomZ = (Math.random()-0.5)*20;
+    let randomX = (Math.random()-0.5)*30;
+    let randomZ = (Math.random()-0.5)*30;
 
     let tx = Math.cos(angle)*radius + randomX;
     let tz = Math.sin(angle)*radius + randomZ;
-    let ty = randomY;
+
+    /* 🔥 PROFUNDIDAD REAL */
+    let thickness = 80 * (1 - radius/450);
+    let ty = (Math.random()-0.5) * thickness;
 
     particles.push({
-        // inicio disperso
-        x:(Math.random()-0.5)*2000,
-        y:(Math.random()-0.5)*2000,
-        z:(Math.random()-0.5)*2000,
+        x:(Math.random()-0.5)*2500,
+        y:(Math.random()-0.5)*2500,
+        z:(Math.random()-0.5)*2500,
 
-        // destino galaxia
         tx,ty,tz,
 
-        size:Math.random()*1.5,
-        baseRadius:radius
+        size:Math.random()*1.5
     });
 }
 
-/* ⏳ ANIMACIÓN DE FORMACIÓN */
+/* ⏳ ANIMACIÓN */
 let startTime = Date.now();
 let duration = 6000;
 
@@ -130,17 +131,13 @@ function draw(){
     ctx.fillStyle="black";
     ctx.fillRect(0,0,canvas.width,canvas.height);
 
-    let cx = canvas.width/2;
-    let cy = canvas.height/2;
-
     let t = (Date.now() - startTime) / duration;
     if(t > 1) t = 1;
 
-    /* ⭐ ESTRELLAS FONDO */
+    /* ⭐ FONDO */
     stars.forEach(s=>{
         s.blink += 0.05;
         let brightness = (Math.sin(s.blink)+1)/2;
-
         drawPoint(s.x,s.y,s.z,`rgba(255,255,255,${brightness})`,s.size);
     });
 
@@ -151,47 +148,47 @@ function draw(){
         let y = p.y + (p.ty - p.y)*t;
         let z = p.z + (p.tz - p.z)*t;
 
-        /* giro cuando ya está formada */
+        /* giro continuo */
         if(t === 1){
-            let angle = Math.atan2(z,x)+0.002;
+            let ang = Math.atan2(z,x)+0.002;
             let dist = Math.sqrt(x*x+z*z);
-            x = Math.cos(angle)*dist;
-            z = Math.sin(angle)*dist;
+            x = Math.cos(ang)*dist;
+            z = Math.sin(ang)*dist;
         }
 
-        /* color según distancia (núcleo blanco) */
-      /* 🎨 NUEVOS COLORES (azul → morado → rosado) */
-let dist = Math.sqrt(x*x+z*z);
-let mix = dist/400;
+        /* 🎨 COLORES PRO */
+        let dist = Math.sqrt(x*x+z*z);
+        let mix = dist/450;
 
-// transición de colores
-let r = 150 + 100*Math.sin(mix * Math.PI);
-let g = 80 + 40*(1-mix);
-let b = 255;
+        let r = 80;
+        let g = 120;
+        let b = 255;
 
-// toque rosado
-if(mix > 0.6){
-    r += 80;
-    b -= 50;
-}
+        if(mix > 0.3){
+            r += 100 * (mix - 0.3);
+            b -= 40 * (mix - 0.3);
+        }
 
-// leve brillo en el centro
-if(mix < 0.1){
-    r += 50;
-    g += 30;
-    b += 50;
-}
+        if(mix > 0.6){
+            r += 120 * (mix - 0.6);
+            b -= 80 * (mix - 0.6);
+        }
 
-drawPoint(x,y,z,`rgb(${r},${g},${b})`,p.size);
+        if(mix < 0.15){
+            r += 120;
+            g += 100;
+            b += 150;
+        }
 
+        drawPoint(x,y,z,`rgb(${r},${g},${b})`,p.size);
     });
 
-    /* 🌠 ESTRELLAS FUGACES */
+    /* 🌠 FUGACES */
     shootingStars.forEach((s,i)=>{
 
         ctx.beginPath();
         ctx.moveTo(s.x,s.y);
-        ctx.lineTo(s.x + 40, s.y - 20);
+        ctx.lineTo(s.x + 50, s.y - 25);
         ctx.strokeStyle="white";
         ctx.lineWidth=2;
         ctx.stroke();
@@ -208,7 +205,7 @@ drawPoint(x,y,z,`rgb(${r},${g},${b})`,p.size);
     requestAnimationFrame(draw);
 }
 
-/* 🧠 PROYECCIÓN 3D */
+/* 🧠 PROYECCIÓN */
 function drawPoint(x,y,z,color,size){
 
     let cosY = Math.cos(angleY);
