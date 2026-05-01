@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Galaxia PRO FINAL</title>
+<title>Galaxia Cinemática</title>
 
 <style>
 body{margin:0;overflow:hidden;background:black;}
@@ -125,6 +125,13 @@ for(let i=0;i<total;i++){
 let start=Date.now();
 let duration=6000;
 
+/* 🌀 GIRO GLOBAL */
+let globalRotation = 0;
+
+/* 💬 CONTROL APARICIÓN */
+let nextPhraseIndex = 0;
+let phraseTimer = 0;
+
 /* 🎬 LOOP */
 function draw(){
 
@@ -133,6 +140,8 @@ function draw(){
 
     let t=(Date.now()-start)/duration;
     if(t>1) t=1;
+
+    globalRotation += 0.002; // 🔥 velocidad giro global
 
     /* ⭐ fondo */
     stars.forEach(s=>{
@@ -148,7 +157,7 @@ function draw(){
         let z=p.z+(p.tz-p.z)*t;
 
         if(t===1){
-            let ang=Math.atan2(z,x)+0.004; // 🔥 velocidad giro
+            let ang=Math.atan2(z,x)+globalRotation;
             let dist=Math.sqrt(x*x+z*z);
             x=Math.cos(ang)*dist;
             z=Math.sin(ang)*dist;
@@ -178,39 +187,40 @@ function draw(){
         drawPoint(x,y,z,`rgb(${r},${g},${b})`,p.size);
     });
 
-    /* 💬 GENERAR FRASES CUANDO TERMINA */
-    if(t===1 && frasesData.length===0){
-        frases.forEach((texto,i)=>{
-            let radius=20;
-            let targetRadius=120+i*4;
+    /* 💬 APARICIÓN PROGRESIVA */
+    if(t===1){
+        phraseTimer++;
+        if(phraseTimer > 15 && nextPhraseIndex < frases.length){
+            let i = nextPhraseIndex;
+
+            let radius = 120 + i*4;
             let branch=(i%4)*(Math.PI*2/4);
-            let spin=targetRadius*0.025;
+            let spin=radius*0.025;
             let angle=branch+spin;
 
             frasesData.push({
-                texto,
+                texto:frases[i],
                 radius,
-                targetRadius,
                 angle,
-                y:-200 // 🔥 salen desde abajo
+                opacity:0
             });
-        });
+
+            nextPhraseIndex++;
+            phraseTimer = 0;
+        }
     }
 
-    /* 💬 FRASES ANIMADAS */
+    /* 💬 DIBUJAR FRASES */
     frasesData.forEach(f=>{
 
-        /* expandirse desde centro */
-        f.radius += (f.targetRadius - f.radius)*0.03;
+        f.opacity += 0.03;
+        if(f.opacity > 1) f.opacity = 1;
 
-        /* subir */
-        f.y += 1.2;
-
-        let ang=f.angle+0.004;
+        let ang = f.angle + globalRotation;
 
         let x=Math.cos(ang)*f.radius;
         let z=Math.sin(ang)*f.radius;
-        let y=f.y;
+        let y=0;
 
         let cosY=Math.cos(angleY);
         let sinY=Math.sin(angleY);
@@ -229,11 +239,11 @@ function draw(){
         let px=dx*scale + canvas.width/2;
         let py=dy*scale + canvas.height/2;
 
-        ctx.fillStyle="rgba(255,255,255,0.85)";
+        ctx.fillStyle=`rgba(255,255,255,${f.opacity})`;
         ctx.font=`${14*scale}px Arial`;
         ctx.fillText(f.texto,px,py);
 
-        f.angle+=0.002;
+        f.angle += 0.002;
     });
 
     /* 🌠 fugaces */
