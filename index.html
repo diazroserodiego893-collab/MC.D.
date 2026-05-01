@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Galaxia Final</title>
+<title>Galaxia Ajustada</title>
 
 <style>
 body{
@@ -55,19 +55,18 @@ window.addEventListener("wheel", e=>{
 
 /* ⭐ ESTRELLAS FONDO */
 let stars=[];
-for(let i=0;i<1000;i++){
+for(let i=0;i<1200;i++){
     stars.push({
         x:(Math.random()-0.5)*4000,
         y:(Math.random()-0.5)*4000,
         z:(Math.random()-0.5)*4000,
-        size:Math.random()*1.5,
+        size:Math.random()*2,
         blink:Math.random()*100
     });
 }
 
-/* 🌠 ESTRELLAS FUGACES */
+/* 🌠 FUGACES */
 let shootingStars=[];
-
 function spawnShootingStar(){
     if(shootingStars.length >= 3) return;
 
@@ -80,7 +79,6 @@ function spawnShootingStar(){
         maxLife:50
     });
 }
-
 setInterval(()=>{
     if(Math.random() < 0.5){
         spawnShootingStar();
@@ -100,7 +98,6 @@ for(let i=0;i<total;i++){
     let spin = radius * 0.025;
     let angle = branch + spin;
 
-    /* 🌀 brazos anchos */
     let width = 40;
     let offset = (Math.random()-0.5)*width;
     let angleNoise = (Math.random()-0.5)*0.15;
@@ -108,7 +105,6 @@ for(let i=0;i<total;i++){
     let tx = Math.cos(angle + angleNoise)*(radius + offset);
     let tz = Math.sin(angle + angleNoise)*(radius + offset);
 
-    /* 🌌 volumen suave */
     let thickness = 30 * (1 - radius/420);
     let ty = (Math.random()-0.5)*thickness;
 
@@ -135,10 +131,10 @@ function draw(){
     let t = (Date.now() - startTime) / duration;
     if(t > 1) t = 1;
 
-    /* ⭐ fondo */
+    /* ⭐ estrellas */
     stars.forEach(s=>{
-        s.blink += 0.05;
-        let b = (Math.sin(s.blink)+1)/2;
+        s.blink += 0.08;
+        let b = 0.5 + Math.sin(s.blink)*0.5;
         drawPoint(s.x,s.y,s.z,`rgba(255,255,255,${b})`,s.size);
     });
 
@@ -156,30 +152,30 @@ function draw(){
             z = Math.sin(ang)*dist;
         }
 
-        /* 🎨 NUEVA PALETA */
+        /* 🎨 COLOR AJUSTADO */
         let dist = Math.sqrt(x*x+z*z);
         let mix = dist/420;
 
-        let r = 30;
-        let g = 60;
-        let b = 180;
+        let r = 80;
+        let g = 140;
+        let b = 255;
 
-        if(mix > 0.3){
-            r -= 10 * (mix - 0.3);
-            g -= 20 * (mix - 0.3);
-            b += 30 * (mix - 0.3);
+        if(mix > 0.4){
+            r += 30 * (mix - 0.4);
+            g -= 20 * (mix - 0.4);
+            b -= 30 * (mix - 0.4);
         }
 
-        if(mix > 0.6){
-            r += 40 * (mix - 0.6);
-            g -= 20 * (mix - 0.6);
-            b += 20 * (mix - 0.6);
+        if(mix > 0.7){
+            r += 40 * (mix - 0.7);
+            g -= 20 * (mix - 0.7);
+            b -= 40 * (mix - 0.7);
         }
 
-        /* 🌟 centro azul claro */
+        /* 🌟 centro suave (NO brillante) */
         if(mix < 0.15){
-            r = 120;
-            g = 180;
+            r = 140;
+            g = 190;
             b = 255;
         }
 
