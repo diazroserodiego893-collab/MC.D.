@@ -286,7 +286,17 @@ function draw(){
         s.life++;
         if(s.life>s.max) shootingStars.splice(i,1);
     });
+/* 🖋️ MARCA DE AGUA */
+ctx.save();
 
+ctx.fillStyle = "rgba(255,255,255,0.5)";
+ctx.font = "14px 'Segoe UI', Arial, sans-serif";
+ctx.textAlign = "right";
+
+ctx.fillText("De: Diego.D", canvas.width - 20, canvas.height - 30);
+ctx.fillText("Para: Maria.C", canvas.width - 20, canvas.height - 10);
+
+ctx.restore();
     requestAnimationFrame(draw);
 }
 
