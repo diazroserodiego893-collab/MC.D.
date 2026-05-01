@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Galaxia PRO</title>
+<title>Galaxia Equilibrada</title>
 
 <style>
 body{
@@ -53,9 +53,9 @@ window.addEventListener("wheel", e=>{
     if(zoom > 1400) zoom = 1400;
 });
 
-/* ⭐ ESTRELLAS FONDO */
+/* ⭐ FONDO */
 let stars=[];
-for(let i=0;i<1000;i++){
+for(let i=0;i<800;i++){
     stars.push({
         x:(Math.random()-0.5)*4000,
         y:(Math.random()-0.5)*4000,
@@ -65,12 +65,10 @@ for(let i=0;i<1000;i++){
     });
 }
 
-/* 🌠 ESTRELLAS FUGACES */
+/* 🌠 FUGACES */
 let shootingStars=[];
-
 function spawnShootingStar(){
     if(shootingStars.length >= 3) return;
-
     shootingStars.push({
         x:Math.random()*canvas.width,
         y:Math.random()*canvas.height/2,
@@ -80,35 +78,36 @@ function spawnShootingStar(){
         maxLife:50
     });
 }
-
 setInterval(()=>{
-    if(Math.random() < 0.6){
+    if(Math.random() < 0.5){
         spawnShootingStar();
     }
-}, 700);
+}, 800);
 
-/* 🌌 GALAXIA */
+/* 🌌 GALAXIA (FORMA CONTROLADA) */
 let particles=[];
-let total = 7000;
+let total = 6000;
 let arms = 4;
 
 for(let i=0;i<total;i++){
 
-    let radius = Math.random()*450;
+    let radius = Math.random()*420;
+
     let branch = (i % arms) * (Math.PI*2/arms);
 
-    let spin = radius * 0.04;
+    /* 🔥 ESPIRAL CONTROLADA (CLAVE) */
+    let spin = radius * 0.025;
     let angle = branch + spin;
 
-    let randomX = (Math.random()-0.5)*30;
-    let randomZ = (Math.random()-0.5)*30;
+    /* dispersión lateral leve (no romper forma) */
+    let offset = (Math.random()-0.5)*15;
 
-    let tx = Math.cos(angle)*radius + randomX;
-    let tz = Math.sin(angle)*radius + randomZ;
+    let tx = Math.cos(angle)*(radius + offset);
+    let tz = Math.sin(angle)*(radius + offset);
 
-    /* 🔥 PROFUNDIDAD REAL */
-    let thickness = 80 * (1 - radius/450);
-    let ty = (Math.random()-0.5) * thickness;
+    /* 🔥 PROFUNDIDAD SUAVE (no exagerada) */
+    let thickness = 30 * (1 - radius/420);
+    let ty = (Math.random()-0.5)*thickness;
 
     particles.push({
         x:(Math.random()-0.5)*2500,
@@ -116,12 +115,11 @@ for(let i=0;i<total;i++){
         z:(Math.random()-0.5)*2500,
 
         tx,ty,tz,
-
-        size:Math.random()*1.5
+        size:Math.random()*1.4
     });
 }
 
-/* ⏳ ANIMACIÓN */
+/* ⏳ CREACIÓN */
 let startTime = Date.now();
 let duration = 6000;
 
@@ -134,21 +132,20 @@ function draw(){
     let t = (Date.now() - startTime) / duration;
     if(t > 1) t = 1;
 
-    /* ⭐ FONDO */
+    /* ⭐ estrellas */
     stars.forEach(s=>{
         s.blink += 0.05;
-        let brightness = (Math.sin(s.blink)+1)/2;
-        drawPoint(s.x,s.y,s.z,`rgba(255,255,255,${brightness})`,s.size);
+        let b = (Math.sin(s.blink)+1)/2;
+        drawPoint(s.x,s.y,s.z,`rgba(255,255,255,${b})`,s.size);
     });
 
-    /* 🌌 GALAXIA */
+    /* 🌌 galaxia */
     particles.forEach(p=>{
 
         let x = p.x + (p.tx - p.x)*t;
         let y = p.y + (p.ty - p.y)*t;
         let z = p.z + (p.tz - p.z)*t;
 
-        /* giro continuo */
         if(t === 1){
             let ang = Math.atan2(z,x)+0.002;
             let dist = Math.sqrt(x*x+z*z);
@@ -156,39 +153,38 @@ function draw(){
             z = Math.sin(ang)*dist;
         }
 
-        /* 🎨 COLORES PRO */
+        /* 🎨 COLOR EQUILIBRADO */
         let dist = Math.sqrt(x*x+z*z);
-        let mix = dist/450;
+        let mix = dist/420;
 
-        let r = 80;
+        let r = 70;
         let g = 120;
         let b = 255;
 
-        if(mix > 0.3){
-            r += 100 * (mix - 0.3);
-            b -= 40 * (mix - 0.3);
+        if(mix > 0.4){
+            r += 80 * (mix - 0.4);
+            b -= 40 * (mix - 0.4);
         }
 
-        if(mix > 0.6){
-            r += 120 * (mix - 0.6);
-            b -= 80 * (mix - 0.6);
+        if(mix > 0.7){
+            r += 120 * (mix - 0.7);
+            b -= 80 * (mix - 0.7);
         }
 
         if(mix < 0.15){
             r += 120;
-            g += 100;
-            b += 150;
+            g += 90;
+            b += 140;
         }
 
         drawPoint(x,y,z,`rgb(${r},${g},${b})`,p.size);
     });
 
-    /* 🌠 FUGACES */
+    /* 🌠 fugaces */
     shootingStars.forEach((s,i)=>{
-
         ctx.beginPath();
         ctx.moveTo(s.x,s.y);
-        ctx.lineTo(s.x + 50, s.y - 25);
+        ctx.lineTo(s.x+50,s.y-25);
         ctx.strokeStyle="white";
         ctx.lineWidth=2;
         ctx.stroke();
