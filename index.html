@@ -2,8 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Galaxia Real</title>
-
+<title>Galaxia Final</title>
 <style>
 body{
     margin:0;
@@ -53,18 +52,41 @@ window.addEventListener("wheel", e=>{
     if(zoom > 1200) zoom = 1200;
 });
 
-/* 🌠 ESTRELLAS DE FONDO */
+/* ⭐ ESTRELLAS FONDO */
 let stars=[];
-for(let i=0;i<400;i++){
+for(let i=0;i<800;i++){
     stars.push({
-        x:(Math.random()-0.5)*2000,
-        y:(Math.random()-0.5)*2000,
-        z:(Math.random()-0.5)*2000,
-        size:Math.random()*1.5
+        x:(Math.random()-0.5)*3000,
+        y:(Math.random()-0.5)*3000,
+        z:(Math.random()-0.5)*3000,
+        size:Math.random()*1.5,
+        blink:Math.random()*100
     });
 }
 
-/* 🌌 GALAXIA ESPIRAL REAL */
+/* 🌠 ESTRELLAS FUGACES (máx 3) */
+let shootingStars=[];
+
+function spawnShootingStar(){
+    if(shootingStars.length >= 3) return;
+
+    shootingStars.push({
+        x:Math.random()*canvas.width,
+        y:Math.random()*canvas.height/2,
+        vx: -10 - Math.random()*5,
+        vy: 5 + Math.random()*3,
+        life:0,
+        maxLife:60
+    });
+}
+
+setInterval(()=>{
+    if(Math.random() < 0.5){
+        spawnShootingStar();
+    }
+}, 800);
+
+/* 🌌 GALAXIA */
 let particles=[];
 let total = 6000;
 let arms = 4;
@@ -73,35 +95,34 @@ for(let i=0;i<total;i++){
 
     let radius = Math.random()*400;
     let branch = (i % arms) * (Math.PI*2/arms);
-
     let spin = radius * 0.02;
-
     let angle = branch + spin;
 
-    // dispersión suave
     let randomX = (Math.random()-0.5)*20;
     let randomY = (Math.random()-0.5)*10;
     let randomZ = (Math.random()-0.5)*20;
 
-    let x = Math.cos(angle)*radius + randomX;
-    let z = Math.sin(angle)*radius + randomZ;
-
-    // altura tipo disco
-    let y = randomY;
-
-    // color gradiente
-    let mix = radius / 400;
-
-    let r = 150 + 100*(1-mix);
-    let g = 100 + 80*(1-mix);
-    let b = 255;
+    let tx = Math.cos(angle)*radius + randomX;
+    let tz = Math.sin(angle)*radius + randomZ;
+    let ty = randomY;
 
     particles.push({
-        x,y,z,
+        // inicio disperso
+        x:(Math.random()-0.5)*2000,
+        y:(Math.random()-0.5)*2000,
+        z:(Math.random()-0.5)*2000,
+
+        // destino galaxia
+        tx,ty,tz,
+
         size:Math.random()*1.5,
-        color:`rgb(${r},${g},${b})`
+        baseRadius:radius
     });
 }
+
+/* ⏳ ANIMACIÓN DE FORMACIÓN */
+let startTime = Date.now();
+let duration = 6000;
 
 /* 🎬 LOOP */
 function draw(){
@@ -112,19 +133,66 @@ function draw(){
     let cx = canvas.width/2;
     let cy = canvas.height/2;
 
-    /* ⭐ fondo */
+    let t = (Date.now() - startTime) / duration;
+    if(t > 1) t = 1;
+
+    /* ⭐ ESTRELLAS FONDO */
     stars.forEach(s=>{
-        drawPoint(s.x,s.y,s.z,"white",s.size);
+        s.blink += 0.05;
+        let brightness = (Math.sin(s.blink)+1)/2;
+
+        drawPoint(s.x,s.y,s.z,`rgba(255,255,255,${brightness})`,s.size);
     });
 
-    /* 🌌 galaxia */
+    /* 🌌 GALAXIA */
     particles.forEach(p=>{
-        drawPoint(p.x,p.y,p.z,p.color,p.size);
+
+        let x = p.x + (p.tx - p.x)*t;
+        let y = p.y + (p.ty - p.y)*t;
+        let z = p.z + (p.tz - p.z)*t;
+
+        /* giro cuando ya está formada */
+        if(t === 1){
+            let angle = Math.atan2(z,x)+0.002;
+            let dist = Math.sqrt(x*x+z*z);
+            x = Math.cos(angle)*dist;
+            z = Math.sin(angle)*dist;
+        }
+
+        /* color según distancia (núcleo blanco) */
+        let dist = Math.sqrt(x*x+z*z);
+        let mix = dist/400;
+
+        let r = 200 + 55*(1-mix);
+        let g = 120 + 80*(1-mix);
+        let b = 255;
+
+        drawPoint(x,y,z,`rgb(${r},${g},${b})`,p.size);
+    });
+
+    /* 🌠 ESTRELLAS FUGACES */
+    shootingStars.forEach((s,i)=>{
+
+        ctx.beginPath();
+        ctx.moveTo(s.x,s.y);
+        ctx.lineTo(s.x + 40, s.y - 20);
+        ctx.strokeStyle="white";
+        ctx.lineWidth=2;
+        ctx.stroke();
+
+        s.x += s.vx;
+        s.y += s.vy;
+        s.life++;
+
+        if(s.life > s.maxLife){
+            shootingStars.splice(i,1);
+        }
     });
 
     requestAnimationFrame(draw);
 }
 
+/* 🧠 PROYECCIÓN 3D */
 function drawPoint(x,y,z,color,size){
 
     let cosY = Math.cos(angleY);
