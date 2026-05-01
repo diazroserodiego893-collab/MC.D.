@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Galaxia Ajustada</title>
+<title>Galaxia con Frases</title>
 
 <style>
 body{
@@ -53,7 +53,7 @@ window.addEventListener("wheel", e=>{
     if(zoom > 1400) zoom = 1400;
 });
 
-/* ⭐ ESTRELLAS FONDO */
+/* ⭐ ESTRELLAS */
 let stars=[];
 for(let i=0;i<1200;i++){
     stars.push({
@@ -69,7 +69,6 @@ for(let i=0;i<1200;i++){
 let shootingStars=[];
 function spawnShootingStar(){
     if(shootingStars.length >= 3) return;
-
     shootingStars.push({
         x:Math.random()*canvas.width,
         y:Math.random()*canvas.height/2,
@@ -84,6 +83,42 @@ setInterval(()=>{
         spawnShootingStar();
     }
 }, 800);
+
+/* 💬 FRASES */
+let frases = [
+"Todo pasa","Sigue","Respira","Confía","Avanza","Fluye","Sin miedo","Un paso más",
+"Calma","Es hoy","No pares","Vas bien","Sigue brillando","Eres capaz","Todo suma",
+"Mantente firme","Cree en ti","Nada es casual","Sigue intentando","Paso a paso",
+"Resiste","Evoluciona","Aprende","Siente","Intenta otra vez","No te rindas",
+"Tu momento llega","Todo mejora","Es temporal","Sigue soñando","Eres suficiente",
+"No mires atrás","Crece","Insiste","Persiste","Suelta","Renace","Brilla",
+"Todo cambia","Sigue creando","No dudes","Hazlo posible","Confía más",
+"Rompe límites","Sin excusas","Hazlo hoy","Actúa","Vive","Construye",
+"Todo cuenta","Atrévete","No te detengas","Da el salto","Eres fuerte",
+"Sigue aquí","Hazlo real","Enfócate","Tú puedes","No pares ahora",
+"Da lo mejor","Cambia","Reinventa","Empieza","Avanza siempre",
+"Todo fluye","Nada te detiene","Sigue intentando","Cree más",
+"Todo encaja","Sigue adelante","No te rindas","Más fuerte","Más alto",
+"Más lejos","Tu camino","Tu historia","Tu momento","Sin miedo nunca",
+"Siempre adelante","Haz historia","Confía siempre","Nunca pares"
+];
+
+/* 💬 POSICIÓN FRASES */
+let frasesData = [];
+frases.forEach((texto, i)=>{
+
+    let radius = 120 + i*4;
+    let branch = (i % 4) * (Math.PI*2/4);
+    let spin = radius * 0.025;
+    let angle = branch + spin;
+
+    frasesData.push({
+        texto,
+        radius,
+        angle,
+        y:(Math.random()-0.5)*20
+    });
+});
 
 /* 🌌 GALAXIA */
 let particles=[];
@@ -112,7 +147,6 @@ for(let i=0;i<total;i++){
         x:(Math.random()-0.5)*2500,
         y:(Math.random()-0.5)*2500,
         z:(Math.random()-0.5)*2500,
-
         tx,ty,tz,
         size:Math.random()*1.4
     });
@@ -131,7 +165,7 @@ function draw(){
     let t = (Date.now() - startTime) / duration;
     if(t > 1) t = 1;
 
-    /* ⭐ estrellas */
+    /* ⭐ fondo */
     stars.forEach(s=>{
         s.blink += 0.08;
         let b = 0.5 + Math.sin(s.blink)*0.5;
@@ -140,7 +174,6 @@ function draw(){
 
     /* 🌌 galaxia */
     particles.forEach(p=>{
-
         let x = p.x + (p.tx - p.x)*t;
         let y = p.y + (p.ty - p.y)*t;
         let z = p.z + (p.tz - p.z)*t;
@@ -152,7 +185,6 @@ function draw(){
             z = Math.sin(ang)*dist;
         }
 
-        /* 🎨 COLOR AJUSTADO */
         let dist = Math.sqrt(x*x+z*z);
         let mix = dist/420;
 
@@ -161,18 +193,17 @@ function draw(){
         let b = 255;
 
         if(mix > 0.4){
-            r += 30 * (mix - 0.4);
-            g -= 20 * (mix - 0.4);
-            b -= 30 * (mix - 0.4);
+            r += 30*(mix-0.4);
+            g -= 20*(mix-0.4);
+            b -= 30*(mix-0.4);
         }
 
         if(mix > 0.7){
-            r += 40 * (mix - 0.7);
-            g -= 20 * (mix - 0.7);
-            b -= 40 * (mix - 0.7);
+            r += 40*(mix-0.7);
+            g -= 20*(mix-0.7);
+            b -= 40*(mix-0.7);
         }
 
-        /* 🌟 centro suave (NO brillante) */
         if(mix < 0.15){
             r = 140;
             g = 190;
@@ -180,6 +211,39 @@ function draw(){
         }
 
         drawPoint(x,y,z,`rgb(${r},${g},${b})`,p.size);
+    });
+
+    /* 💬 FRASES */
+    frasesData.forEach(f=>{
+
+        let ang = f.angle + 0.002;
+
+        let x = Math.cos(ang)*f.radius;
+        let z = Math.sin(ang)*f.radius;
+        let y = f.y;
+
+        let cosY = Math.cos(angleY);
+        let sinY = Math.sin(angleY);
+        let dx = cosY*x - sinY*z;
+        let dz = sinY*x + cosY*z;
+
+        let cosX = Math.cos(angleX);
+        let sinX = Math.sin(angleX);
+        let dy = cosX*y - sinX*dz;
+        dz = sinX*y + cosX*dz;
+
+        if(dz < -zoom + 50) return;
+
+        let scale = zoom/(zoom+dz);
+
+        let px = dx*scale + canvas.width/2;
+        let py = dy*scale + canvas.height/2;
+
+        ctx.fillStyle = "rgba(255,255,255,0.8)";
+        ctx.font = `${14*scale}px Arial`;
+        ctx.fillText(f.texto, px, py);
+
+        f.angle += 0.002;
     });
 
     /* 🌠 fugaces */
