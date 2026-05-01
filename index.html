@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Galaxia Cinemática</title>
+<title>Galaxia Final PRO</title>
 
 <style>
 body{margin:0;overflow:hidden;background:black;}
@@ -70,22 +70,48 @@ setInterval(()=>{
 },800);
 
 /* 💬 FRASES */
-let frases=[
-"Todo pasa","Sigue","Respira","Confía","Avanza","Fluye","Sin miedo","Un paso más",
-"Calma","Es hoy","No pares","Vas bien","Sigue brillando","Eres capaz","Todo suma",
-"Mantente firme","Cree en ti","Nada es casual","Sigue intentando","Paso a paso",
-"Resiste","Evoluciona","Aprende","Siente","Intenta otra vez","No te rindas",
-"Tu momento llega","Todo mejora","Es temporal","Sigue soñando","Eres suficiente",
-"No mires atrás","Crece","Insiste","Persiste","Suelta","Renace","Brilla",
-"Todo cambia","Sigue creando","No dudes","Hazlo posible","Confía más",
-"Rompe límites","Sin excusas","Hazlo hoy","Actúa","Vive","Construye",
-"Todo cuenta","Atrévete","No te detengas","Da el salto","Eres fuerte",
-"Sigue aquí","Hazlo real","Enfócate","Tú puedes","No pares ahora",
-"Da lo mejor","Cambia","Reinventa","Empieza","Avanza siempre",
-"Todo fluye","Nada te detiene","Sigue intentando","Cree más",
-"Todo encaja","Sigue adelante","No te rindas","Más fuerte","Más alto",
-"Más lejos","Tu camino","Tu historia","Tu momento","Sin miedo nunca",
-"Siempre adelante","Haz historia","Confía siempre","Nunca pares"
+let frases = [
+"ɴᴏs ᴄᴏɴᴏᴄᴇᴍᴏs?","ᴍᴇ ᴄᴀᴇs ʙɪᴇɴ","ʜᴏʟᴀ, ᴜɴɪᴠᴇʀsᴏ","ᴄᴏɪɴᴄɪᴅɪʀ ᴄᴏɴᴛɪɢᴏ",
+"ᴘᴜɴᴛᴏ ᴅᴇ ᴘᴀʀᴛɪᴅᴀ","ʜᴀʙʟᴇᴍᴏs ᴜɴ ᴅɪ́ᴀ","ʙᴜᴇɴᴀ ᴠɪʙʀᴀ ᴀǫᴜɪ́","ᴄᴀғᴇ́ ᴘᴇɴᴅɪᴇɴᴛᴇ",
+"sᴏɴʀɪsᴀ ᴛᴜʏᴀ","ᴅᴇsᴛɪɴᴏ ʀᴀʀᴏ",
+
+"ʙʀɪʟʟᴀs ᴅɪsᴛɪɴᴛᴏ","ᴇʀᴇs ᴍɪ ᴄᴏɴsᴛᴇʟᴀᴄɪᴏ́ɴ ғᴀᴠᴏʀɪᴛᴀ",
+"ᴇɴᴛʀᴇ ᴛᴀɴᴛᴀs ᴇsᴛʀᴇʟʟᴀs, ᴛᴜ́","ᴏ́ʀʙɪᴛᴀ ᴄᴇʀᴄᴀ ᴅᴇ ᴛɪ",
+"ɢʀᴀᴠᴇᴅᴀᴅ ᴛᴜʏᴀ","ᴘᴏʟᴠᴏ ᴅᴇ ᴇsᴛʀᴇʟʟᴀs","ʟᴜᴢ sᴜᴀᴠᴇ",
+"ᴘʟᴀɴᴇᴛᴀ ᴘᴏʀ ᴅᴇsᴄᴜʙʀɪʀ","ᴇᴄʟɪᴘsᴇ ᴅᴇ ᴘᴀʟᴀʙʀᴀs","ɴᴏᴄʜᴇ ᴄᴏɴ ᴛᴜ ɴᴏᴍʙʀᴇ",
+
+"ᴍᴇ ɢᴜsᴛᴀ ᴛᴜ ᴇɴᴇʀɢɪ́ᴀ","ǫᴜᴇ́ ʙᴏɴɪᴛᴏ ᴄʀᴜᴢᴀʀɴᴏs",
+"ᴘᴇǫᴜᴇɴ̃ᴀ ᴄᴏɪɴᴄɪᴅᴇɴᴄɪᴀ","ᴍᴇ ʜᴀᴄᴇs ᴇʟ ᴅɪ́ᴀ",
+"ᴛɪᴇɴᴇs ᴀʟɢᴏ ᴇsᴘᴇᴄɪᴀʟ","ᴄᴏɴᴛɪɢᴏ sᴇ ᴠᴇ ʙɪᴇɴ",
+"ᴄᴜʀɪᴏsɪᴅᴀᴅ ᴘᴏʀ ᴛɪ","ʙᴜᴇɴ ʜᴀʟʟᴀᴢɢᴏ","ᴍᴇ ᴀɢʀᴀᴅᴀs","ᴄᴀsᴜᴀʟɪᴅᴀᴅ ʟɪɴᴅᴀ",
+
+"¿ʏ sɪ ʜᴀʙʟᴀᴍᴏs?","¿ᴜɴ ᴅɪ́ᴀ ɴᴏs ʀᴇɪ́ᴍᴏs?",
+"¿ᴛᴇ ᴅᴇᴊᴀs ᴄᴏɴᴏᴄᴇʀ?","¿ǫᴜᴇ́ ᴛᴀʟ ᴜɴ ʜᴏʟᴀ?",
+"¿ᴄᴏɪɴᴄɪᴅɪᴍᴏs ʟᴜᴇɢᴏ?","¿ᴛɪᴇɴᴇs 5 ᴍɪɴᴜᴛᴏs?",
+"¿ᴛᴇ ᴄᴜᴇɴᴛᴏ ᴀʟɢᴏ?","¿ᴄᴀғᴇ́ sɪɴ ᴘʀᴇsɪᴏ́ɴ?",
+"¿ᴍᴇ ᴅᴀs ᴄʜᴀɴᴄᴇ?","¿ʏ sɪ sɪ́?",
+
+"sɪʟᴇɴᴄɪᴏ ʙᴏɴɪᴛᴏ ᴄᴏɴᴛɪɢᴏ","ᴍᴏᴍᴇɴᴛᴏ ǫᴜᴇ ɴᴏ ᴘᴀsᴀ",
+"sᴜsᴜʀʀᴏ ᴅᴇ ǫᴜɪᴢᴀ́","ᴇsᴘᴀᴄɪᴏ ᴘᴀʀᴀ ᴅᴏs",
+"ɪᴅᴇᴀ ᴅᴇ ɴᴏsᴏᴛʀᴏs","ᴛɪᴇᴍᴘᴏ ᴅᴇᴛᴇɴɪᴅᴏ",
+"ᴍɪʀᴀᴅᴀ ǫᴜᴇ ᴠᴜᴇʟᴠᴇ","ʀɪsᴀ ᴘᴇɴᴅɪᴇɴᴛᴇ",
+"ʜɪsᴛᴏʀɪᴀ sɪɴ ᴇsᴄʀɪʙɪʀ","ᴘᴏsɪʙɪʟɪᴅᴀᴅ ᴀʙɪᴇʀᴛᴀ",
+
+"ᴇsᴛᴏ ᴇʀᴀ ᴘᴀʀᴀ ᴛɪ","ᴏᴊᴀʟᴀ́ ᴛᴇ ɢᴜsᴛᴀʀᴀ","ᴘᴇɴsᴇ́ ᴇɴ ᴛɪ",
+"sᴏʟᴏ ǫᴜᴇʀɪ́ᴀ ᴀʟᴇɢʀᴀʀᴛᴇ","ᴍᴏᴛɪᴠᴏ: ᴛᴜ́",
+"sᴏɴʀɪsᴀ ʙᴜsᴄᴀᴅᴀ","ʜᴇᴄʜᴏ ᴄᴏɴ ɢᴀɴᴀs","ᴘᴀʀᴀ ᴛᴜ ᴅɪ́ᴀ","ᴇsᴘᴇʀᴏ sᴜᴍᴀʀ",
+
+"ᴄʜᴀʀʟᴀ sɪɴ ʀᴇʟᴏᴊ","ʜᴇʟᴀᴅᴏ ʏ ɴᴀᴅᴀ ᴍᴀ́s",
+"ᴄᴀᴍɪɴᴀʀ sɪɴ ʀᴜᴍʙᴏ","ᴘᴀʟᴀʙʀᴀs sᴜᴇʟᴛᴀs",
+"ᴛᴀʀᴅᴇ ᴛʀᴀɴǫᴜɪʟᴀ","ʀɪsᴀ ғᴀ́ᴄɪʟ",
+"ᴄᴏᴍᴘᴀɴ̃ɪ́ᴀ sɪᴍᴘʟᴇ","ᴘʟᴀɴ ᴄᴇʀᴏ",
+"sᴏʟᴏ ᴇsᴛᴀʀ","sɪɴ ᴇxᴘᴇᴄᴛᴀᴛɪᴠᴀs",
+
+"ǫᴜᴇ́ᴅᴀᴛᴇ ᴜɴ ʀᴀᴛᴏ","ᴍᴇ ɢᴜsᴛᴀ ᴇsᴛᴏ",
+"ᴀǫᴜɪ́ ᴇsᴛᴏʏ","ᴘᴏʀ sɪ ǫᴜɪᴇʀᴇs",
+"ᴄᴜᴀɴᴅᴏ ǫᴜɪᴇʀᴀs","sɪɴ ᴘʀɪsᴀ",
+"ʏᴏ ɪɴᴠɪᴛᴏ ʟᴀ ʀɪsᴀ","ᴛᴜ́ ᴘᴏɴᴇs ᴇʟ ᴄᴜᴀ́ɴᴅᴏ",
+"ɴᴏs ʟᴇᴇᴍᴏs","ᴄᴏɴᴛɪɴᴜᴀʀᴀ́..."
 ];
 
 let frasesData=[];
@@ -141,7 +167,7 @@ function draw(){
     let t=(Date.now()-start)/duration;
     if(t>1) t=1;
 
-    globalRotation += 0.002; // 🔥 velocidad giro global
+    globalRotation += 0.002;
 
     /* ⭐ fondo */
     stars.forEach(s=>{
@@ -191,8 +217,8 @@ function draw(){
     if(t===1){
         phraseTimer++;
         if(phraseTimer > 15 && nextPhraseIndex < frases.length){
-            let i = nextPhraseIndex;
 
+            let i = nextPhraseIndex;
             let radius = 120 + i*4;
             let branch=(i%4)*(Math.PI*2/4);
             let spin=radius*0.025;
@@ -240,7 +266,7 @@ function draw(){
         let py=dy*scale + canvas.height/2;
 
         ctx.fillStyle=`rgba(255,255,255,${f.opacity})`;
-        ctx.font=`${14*scale}px Arial`;
+        ctx.font=`${14*scale}px 'Segoe UI','Arial Unicode MS',sans-serif`;
         ctx.fillText(f.texto,px,py);
 
         f.angle += 0.002;
