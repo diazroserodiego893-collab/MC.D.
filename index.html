@@ -160,14 +160,30 @@ function draw(){
         }
 
         /* color según distancia (núcleo blanco) */
-        let dist = Math.sqrt(x*x+z*z);
-        let mix = dist/400;
+      /* 🎨 NUEVOS COLORES (azul → morado → rosado) */
+let dist = Math.sqrt(x*x+z*z);
+let mix = dist/400;
 
-        let r = 200 + 55*(1-mix);
-        let g = 120 + 80*(1-mix);
-        let b = 255;
+// transición de colores
+let r = 150 + 100*Math.sin(mix * Math.PI);
+let g = 80 + 40*(1-mix);
+let b = 255;
 
-        drawPoint(x,y,z,`rgb(${r},${g},${b})`,p.size);
+// toque rosado
+if(mix > 0.6){
+    r += 80;
+    b -= 50;
+}
+
+// leve brillo en el centro
+if(mix < 0.1){
+    r += 50;
+    g += 30;
+    b += 50;
+}
+
+drawPoint(x,y,z,`rgb(${r},${g},${b})`,p.size);
+
     });
 
     /* 🌠 ESTRELLAS FUGACES */
