@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Galaxia 3D</title>
+<title>Galaxia Pro</title>
 
 <style>
 body{
@@ -30,12 +30,11 @@ function resize(){
 resize();
 window.addEventListener("resize", resize);
 
-/* 🎮 CONTROL DE CÁMARA */
+/* 🎮 CONTROL */
 let angleX = 0;
 let angleY = 0;
-let zoom = 400;
+let zoom = 500;
 
-/* mouse */
 let dragging = false;
 
 window.addEventListener("mousedown", ()=> dragging=true);
@@ -48,27 +47,57 @@ window.addEventListener("mousemove", e=>{
     }
 });
 
-/* zoom */
 window.addEventListener("wheel", e=>{
     zoom += e.deltaY * 0.3;
-    if(zoom < 100) zoom = 100;
-    if(zoom > 1000) zoom = 1000;
+    if(zoom < 250) zoom = 250;
+    if(zoom > 1200) zoom = 1200;
 });
 
-/* 🌌 GALAXIA (3D) */
-let particles=[];
-for(let i=0;i<1500;i++){
-    let r = Math.random()*300;
-    let a = Math.random()*Math.PI*2;
+/* 🎨 COLORES */
+const colores = [
+    "#4da6ff",
+    "#6a8cff",
+    "#8a4dff",
+    "#a066ff",
+    "#5bc0ff"
+];
 
+/* 🌌 PARTICULAS */
+let particles=[];
+let total = 2500;
+
+for(let i=0;i<total;i++){
+
+    // distribución en brazos (tipo la imagen)
+    let arms = 6;
+    let arm = Math.floor(Math.random()*arms);
+
+    let angle = (arm / arms) * Math.PI * 2;
+    angle += Math.random()*0.5;
+
+    let radius = Math.random()*350;
+
+    let targetX = Math.cos(angle)*radius;
+    let targetZ = Math.sin(angle)*radius;
+
+    // inicio disperso
     particles.push({
-        x: Math.cos(a)*r,
-        y: (Math.random()-0.5)*50,
-        z: Math.sin(a)*r,
-        size: Math.random()*1.5,
-        color: Math.random()>0.5?"#5b8cff":"#8a4dff"
+        x:(Math.random()-0.5)*1500,
+        y:(Math.random()-0.5)*200,
+        z:(Math.random()-0.5)*1500,
+
+        tx:targetX,
+        ty:(Math.random()-0.5)*20,
+        tz:targetZ,
+
+        size:Math.random()*1.5,
+        color:colores[Math.floor(Math.random()*colores.length)]
     });
 }
+
+/* ⏳ TIEMPO DE CREACIÓN */
+let startTime = Date.now();
+let duration = 6000;
 
 /* 🎬 ANIMACIÓN */
 function draw(){
@@ -79,27 +108,40 @@ function draw(){
     let cx = canvas.width/2;
     let cy = canvas.height/2;
 
+    let t = (Date.now() - startTime) / duration;
+    if(t > 1) t = 1;
+
     particles.forEach(p=>{
 
-        /* rotación */
-        let x = p.x;
-        let y = p.y;
-        let z = p.z;
+        /* interpolación (formación) */
+        let x = p.x + (p.tx - p.x)*t;
+        let y = p.y + (p.ty - p.y)*t;
+        let z = p.z + (p.tz - p.z)*t;
 
-        /* rotar Y */
+        /* giro cuando ya está formada */
+        if(t === 1){
+            let angle = Math.atan2(z,x) + 0.002;
+            let dist = Math.sqrt(x*x + z*z);
+
+            x = Math.cos(angle)*dist;
+            z = Math.sin(angle)*dist;
+        }
+
+        /* rotación cámara */
         let cosY = Math.cos(angleY);
         let sinY = Math.sin(angleY);
         let dx = cosY*x - sinY*z;
         let dz = sinY*x + cosY*z;
 
-        /* rotar X */
         let cosX = Math.cos(angleX);
         let sinX = Math.sin(angleX);
         let dy = cosX*y - sinX*dz;
         dz = sinX*y + cosX*dz;
 
-        /* proyección */
+        if(dz < -zoom + 50) return;
+
         let scale = zoom / (zoom + dz);
+
         let px = dx * scale + cx;
         let py = dy * scale + cy;
 
