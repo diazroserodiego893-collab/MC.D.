@@ -9,49 +9,52 @@ body{
     margin:0;
     overflow:hidden;
     background:black;
-    font-family:Arial;
 }
 
+/* canvas */
 canvas{
     position:fixed;
     top:0;
     left:0;
 }
 
+/* frases */
 .frase{
     position:absolute;
     color:#d0d8ff;
     font-size:14px;
     pointer-events:none;
-    white-space:nowrap;
+    transform:translate(-50%, -50%);
 }
 </style>
 </head>
 <body>
 
-<canvas id="canvas"></canvas>
+<canvas id="c"></canvas>
 
 <script>
-const canvas = document.getElementById("canvas");
+const canvas = document.getElementById("c");
 const ctx = canvas.getContext("2d");
 
 function resize(){
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
 }
 resize();
 window.addEventListener("resize", resize);
 
-/* 🎮 MOUSE */
-let mouse = {x:0,y:0};
+/* MOUSE */
+let mouseX = 0;
+let mouseY = 0;
+
 window.addEventListener("mousemove", e=>{
-    mouse.x = e.clientX;
-    mouse.y = e.clientY;
+    mouseX = e.clientX;
+    mouseY = e.clientY;
 });
 
-/* 🌟 ESTRELLAS */
+/* ESTRELLAS */
 let estrellas=[];
-for(let i=0;i<200;i++){
+for(let i=0;i<150;i++){
     estrellas.push({
         x:Math.random()*canvas.width,
         y:Math.random()*canvas.height,
@@ -60,65 +63,44 @@ for(let i=0;i<200;i++){
     });
 }
 
-/* 🌌 GALAXIA */
+/* GALAXIA (ARREGLADA) */
 let particles=[];
-for(let i=0;i<900;i++){
+for(let i=0;i<700;i++){
     particles.push({
         angle:Math.random()*Math.PI*2,
-        radius:Math.random()*300,
+        radius:Math.random()*250,
         speed:0.001 + Math.random()*0.002,
         size:Math.random()*1.5,
-        color:Math.random()>0.5?"#5b7fff":"#7a4dff"
+        color:Math.random()>0.5?"#4da6ff":"#8a4dff"
     });
 }
 
-/* 🌠 METEOROS */
-let meteoros=[];
-setInterval(()=>{
-    meteoros.push({
-        x:Math.random()*canvas.width,
-        y:0,
-        len:Math.random()*80+40,
-        speed:4+Math.random()*3,
-        op:1
-    });
-},1500);
-
-/* 💬 FRASES */
-const frasesTexto = [
-"Eres mi universo","Todo empieza contigo","Azul infinito","Entre estrellas te pienso",
-"Nada brilla como tú","Eres mi galaxia","Perdido en ti","Eres luz","Siempre tú",
-"Sin gravedad contigo","Eres arte","Más allá del cielo","Eres infinito","Mi paz",
-"Eres destino","Luz en la oscuridad","Contigo todo","Te encuentro en todo",
-"Mi universo eres tú","Eres magia","Eres mi centro","Siempre vuelvo a ti",
-"Mi lugar seguro","Eres eterno","Mi todo","Mi calma","Eres único",
-"Brillas más","Eres especial","Eres razón","Mi cielo","Mi verdad",
-"Te elijo siempre","Mi estrella","Mi mundo","Mi razón","Eres perfecto",
-"Eres real","Mi todo eres tú","Mi infinito","Siempre tú","Mi universo azul",
-"Mi galaxia","Mi espacio","Mi razón de ser","Siempre presente","Mi energía","Mi todo"
-];
+/* FRASES */
+const textos = ["Eres mi universo","Siempre tú","Eres luz","Mi galaxia","Te pienso","Eres infinito"];
 
 let frases=[];
 
 function crearFrase(){
     let el=document.createElement("div");
     el.className="frase";
-    el.innerText=frasesTexto[Math.floor(Math.random()*frasesTexto.length)];
+    el.innerText=textos[Math.floor(Math.random()*textos.length)];
+
     document.body.appendChild(el);
 
     frases.push({
         el,
         x:Math.random()*canvas.width,
-        y:canvas.height + 20,
-        state:"subiendo",
+        y:canvas.height + 50,
+        state:"sube",
         angle:Math.random()*Math.PI*2,
-        radius:120 + Math.random()*200,
-        speed:0.002 + Math.random()*0.003
+        radius:100 + Math.random()*150,
+        speed:0.002 + Math.random()*0.002
     });
 }
-setInterval(crearFrase,800);
 
-/* 🎬 ANIMACIÓN */
+setInterval(crearFrase,1000);
+
+/* ANIMACIÓN */
 function animar(){
 
     ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -126,38 +108,23 @@ function animar(){
     /* estrellas */
     estrellas.forEach(s=>{
         s.size += Math.sin(Date.now()*s.speed)*0.02;
+
         ctx.fillStyle="white";
         ctx.beginPath();
         ctx.arc(s.x,s.y,s.size,0,Math.PI*2);
         ctx.fill();
     });
 
-    /* meteoros */
-    meteoros.forEach((m,i)=>{
-        ctx.strokeStyle="rgba(255,255,255,"+m.op+")";
-        ctx.lineWidth=2;
-        ctx.beginPath();
-        ctx.moveTo(m.x,m.y);
-        ctx.lineTo(m.x-m.len,m.y-m.len);
-        ctx.stroke();
-
-        m.x+=m.speed;
-        m.y+=m.speed;
-        m.op-=0.01;
-
-        if(m.op<=0) meteoros.splice(i,1);
-    });
-
-    /* centro galaxia (con parallax) */
-    let cx = canvas.width/2 + (mouse.x - canvas.width/2)*0.05;
-    let cy = canvas.height/2 + (mouse.y - canvas.height/2)*0.05;
+    /* centro con movimiento */
+    let cx = canvas.width/2 + (mouseX - canvas.width/2)*0.05;
+    let cy = canvas.height/2 + (mouseY - canvas.height/2)*0.05;
 
     /* galaxia */
     particles.forEach(p=>{
         p.angle += p.speed;
 
-        let x = cx + Math.cos(p.angle) * p.radius;
-        let y = cy + Math.sin(p.angle) * p.radius * 0.6;
+        let x = cx + Math.cos(p.angle)*p.radius;
+        let y = cy + Math.sin(p.angle)*p.radius*0.6;
 
         ctx.fillStyle=p.color;
         ctx.beginPath();
@@ -167,25 +134,21 @@ function animar(){
 
     /* frases */
     frases.forEach(f=>{
-        if(f.state==="subiendo"){
+        if(f.state==="sube"){
             f.y -= 1.5;
 
             if(f.y < canvas.height/2){
                 f.state="orbita";
             }
-
-            f.el.style.left = f.x + "px";
-            f.el.style.top = f.y + "px";
-
         }else{
             f.angle += f.speed;
 
-            let x = cx + Math.cos(f.angle) * f.radius;
-            let y = cy + Math.sin(f.angle) * f.radius * 0.6;
-
-            f.el.style.left = x + "px";
-            f.el.style.top = y + "px";
+            f.x = cx + Math.cos(f.angle)*f.radius;
+            f.y = cy + Math.sin(f.angle)*f.radius*0.6;
         }
+
+        f.el.style.left = f.x + "px";
+        f.el.style.top = f.y + "px";
     });
 
     requestAnimationFrame(animar);
