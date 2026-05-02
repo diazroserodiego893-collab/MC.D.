@@ -1,4 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Galaxia</title>
+
+<style>
+body {
+    margin: 0;
+    overflow: hidden;
+    background: black;
+    font-family: Arial, sans-serif;
+}
+
+#watermark {
+    position: fixed;
+    bottom: 10px;
+    right: 15px;
+    color: rgba(255,255,255,0.7);
+    text-shadow: 0 0 10px rgba(255,255,255,0.8);
+    font-size: 14px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="watermark">
+De: Diego.D<br>Para: Maria.C
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+
 <script>
+
 // ================= SCENE =================
 const scene = new THREE.Scene();
 
@@ -12,6 +46,8 @@ const camera = new THREE.PerspectiveCamera(
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
+
+camera.position.set(0,10,40);
 
 // ================= MOUSE LOOK =================
 let yaw = 0;
@@ -27,8 +63,6 @@ document.addEventListener("mousemove", e => {
 let keys = {};
 document.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
 document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
-
-camera.position.set(0,10,40);
 
 // ================= ESTRELLAS =================
 const starGeo = new THREE.BufferGeometry();
@@ -65,8 +99,7 @@ for(let i=0;i<9000;i++){
 
     let x = Math.cos(spin)*radius;
     let z = Math.sin(spin)*radius;
-
-    let y = (Math.random()-0.5)*1; // MÁS PLANO
+    let y = (Math.random()-0.5)*1; // plano
 
     positions.push(x,y,z);
 
@@ -91,53 +124,16 @@ const points = new THREE.Points(
 galaxy.add(points);
 
 // ================= FRASES =================
-// ================= FRASES =================
-
-// TODAS LAS FRASES (las tuyas completas)
-let todasFrases = [
+let todasFrases = [/* 👇 TODAS TUS FRASES */
 "ᴍᴇ ɢᴜsᴛᴀʀɪ́ᴀ ᴄᴏɴᴏᴄᴇʀᴛᴇ ✨","sᴏʟᴏ ᴘɪᴇɴsᴏ ᴇɴ ᴛɪ 💭","ᴍɪ ᴍᴏᴛɪᴠᴏ ᴇʀᴇs ᴛᴜ́ 💙",
 "ᴍɪ sᴜᴇʀᴛᴇ ғᴜᴇ ᴄᴏɴᴏᴄᴇʀᴛᴇ ✨","ɴᴏ ᴘᴇʀᴅᴀᴍᴏs ʟᴀ ᴏᴘᴏʀᴛᴜɴɪᴅᴀᴅ 💫",
 "ɴᴏ ᴛᴇ sᴀᴄᴏ ᴅᴇ ᴍɪ ᴍᴇɴᴛᴇ 🌙","ᴅᴇᴊᴇᴍᴏs ᴇʟ ᴍɪᴇᴅᴏ ✨","¿ᴄʜᴀʀʟᴀ ʏ ᴜɴ ʜᴇʟᴀᴅᴏ? 🍦",
 "ᴇsᴀ sᴏɴʀɪsᴀ ᴛᴜʏᴀ 😊","ᴍɪ ᴅᴇʙɪʟɪᴅᴀᴅ 💙","ɪʟᴜᴍɪɴᴀs ᴍɪ ᴠɪᴅᴀ ✨",
 "ʟᴀ ᴇsᴛʀᴇʟʟᴀ ǫᴜᴇ ᴍᴀ́s ʙʀɪʟʟᴀ ᴇʀᴇs ᴛᴜ́ 🌟","ᴇɴᴛʀᴇ ᴛᴀɴᴛᴀs ᴇsᴛʀᴇʟʟᴀs, ᴛᴜ́ 💫",
-"ǫᴜɪᴇʀᴏ sᴇʀ ᴘᴀʀᴛᴇ ᴅᴇ ᴛᴜ ᴜɴɪᴠᴇʀsᴏ 🌌","ɴᴏ sᴇ́ ǫᴜᴇ́ ᴛɪᴇɴᴇs, ᴘᴇʀᴏ ᴍᴇ ɢᴜsᴛᴀ 💙",
-"ᴛᴏᴅᴏ ᴍᴇ ʟʟᴇᴠᴀ ᴀ ᴛɪ 💫","ᴛᴜ ʟᴜᴢ ᴍᴇ ᴄᴀʟᴍᴀ 🌙","¿ʏ sɪ ᴅᴇsᴄᴜʙʀɪᴍᴏs ᴜɴ ᴍᴜɴᴅᴏ? 🌍",
-"ᴘᴇʀғᴇᴄᴛᴀ ᴄᴏᴍᴏ ᴜɴ ᴇᴄʟɪᴘsᴇ 🌘","ᴘɪᴇɴsᴏ ᴇɴ ᴛɪ ᴀᴜɴ ᴅᴇ ɴᴏᴄʜᴇ 🌙",
-"ᴛɪᴇɴᴇs ᴇsᴇ ᴀʟɢᴏ ǫᴜᴇ ᴍᴇ ᴇɴᴄᴀɴᴛᴀ 💙","ǫᴜᴇ́ ʙᴏɴɪᴛᴏ ᴄʀᴜᴢᴀʀɴᴏs ✨",
-"ᴜɴᴀ ᴘᴇǫᴜᴇɴ̃ᴀ ᴄᴏɪɴᴄɪᴅᴇɴᴄɪᴀ 💫","ᴍᴇ ʜᴀᴄᴇs sᴇʀ ᴍᴇᴊᴏʀ 🌙",
-"ᴛɪᴇɴᴇs ᴀʟɢᴏ ǫᴜᴇ ɴᴏ ᴇxᴘʟɪᴄᴏ 💙","ᴄᴏɴᴛɪɢᴏ ᴛᴏᴅᴏ ᴇs ᴍᴇᴊᴏʀ 💙",
-"ᴄᴜʀɪᴏsɪᴅᴀᴅ ᴅᴇ ᴛɪ 👀","ᴇɴᴄᴏɴᴛʀᴀʀᴛᴇ ғᴜᴇ ʟᴏ ᴍᴇᴊᴏʀ 💙",
-"ᴍᴇ ᴇɴᴄᴀɴᴛᴀs 💙","ǫᴜᴇ sᴜᴇʀᴛᴇ ᴄᴏɪɴᴄɪᴅɪʀ ᴄᴏɴᴛɪɢᴏ 💫",
-"¿ʏ sɪ ʜᴀʙʟᴀᴍᴏs? 💬","¿ᴜɴ ʀᴀᴛᴏ ᴍᴀ́s? ⏳","¿ᴛᴇ ᴅᴇᴊᴀs ᴄᴏɴᴏᴄᴇʀ? ✨",
-"¿ǫᴜᴇ́ ᴛᴀʟ ᴜɴ ʜᴏʟᴀ? 👋","¿ᴄᴏɪɴᴄɪᴅɪᴍᴏs ʟᴜᴇɢᴏ? 💫","¿ᴛɪᴇɴᴇs 5 ᴍɪɴᴜᴛᴏs? ⏱️",
-"¿ᴛᴇ ᴄᴜᴇɴᴛᴏ ᴀʟɢᴏ? 🤍","¿ᴍᴇ ᴅᴀs ᴄʜᴀɴᴄᴇ? 💙","¿ʏ sɪ sɪ́? ✨",
-"sɪʟᴇɴᴄɪᴏ ʙᴏɴɪᴛᴏ ᴄᴏɴᴛɪɢᴏ 🌙","ᴅᴇᴛɪᴇɴᴇs ᴇʟ ᴛɪᴇᴍᴘᴏ ⏳",
-"ᴍᴇ ǫᴜᴇᴅᴏ ᴄᴏɴ ᴇsᴇ ǫᴜɪᴢᴀ́ ᴄᴏɴᴛɪɢᴏ 💫",
-"ᴍᴇ ɢᴜsᴛᴀ ᴄᴜᴀɴᴅᴏ sᴏᴍᴏs sᴏʟᴏ ɴᴏsᴏᴛʀᴏs 🤍",
-"ᴍᴇ ɢᴜsᴛᴀ ʟᴀ ɪᴅᴇᴀ ᴅᴇ ɴᴏsᴏᴛʀᴏs 💙",
-"ᴛɪᴇᴍᴘᴏ ᴅᴇᴛᴇɴɪᴅᴏ ⏳","ʟᴀ ᴍɪʀᴀᴅᴀ ǫᴜᴇ ᴍᴇ ᴇɴᴠᴜᴇʟᴠᴇ 👀",
-"sᴏʟᴏ ǫᴜɪᴇʀᴏ ᴜɴᴀ sᴏɴʀɪsᴀ 😊","ᴜɴᴀ ʜɪsᴛᴏʀɪᴀ ᴘᴏʀ ᴇsᴄʀɪʙɪʀ 📖",
-"ᴄᴏɴᴛɪɢᴏ ᴛᴏᴅᴏ ᴘᴜᴇᴅᴇ ᴘᴀsᴀʀ ✨","ᴇsᴛᴏ ᴇʀᴀ ᴘᴀʀᴀ ᴛɪ 🎁",
-"ᴜɴ ᴅᴇᴛᴀʟʟᴇ ᴘᴜᴇᴅᴇ ᴍᴇᴊᴏʀᴀʀ ᴛᴜ ᴅɪ́ᴀ ✨","ᴏᴊᴀʟᴀ́ ᴛᴇ ɢᴜsᴛᴀʀᴀ 💙",
-"ᴘᴇɴsᴀɴᴅᴏ ᴇɴ ᴛɪ 🌙","sᴏʟᴏ ǫᴜᴇʀɪ́ᴀ ᴀʟᴇɢʀᴀʀᴛᴇ 😊",
-"ᴍɪ ᴍᴏᴛɪᴠᴏ ᴇʀᴇs ᴛᴜ́ 💙","sᴏɴʀɪsᴀ ʙᴜsᴄᴀᴅᴀ 😊",
-"ʜᴇᴄʜᴏ ᴄᴏɴ ɢᴀɴᴀs ✨","sᴏʟᴏ ᴘᴀʀᴀ ᴛɪ 💙",
-"ᴇsᴘᴇʀᴏ ʟᴀ ᴏᴘᴏʀᴛᴜɴɪᴅᴀᴅ 💫","ᴄʜᴀʀʟᴀ sɪɴ ʀᴇʟᴏᴊ ☕",
-"ʜᴇʟᴀᴅᴏ ʏ ɴᴀᴅᴀ ᴍᴀ́s 🍦","ᴄᴀᴍɪɴᴀʀ sɪɴ ʀᴜᴍʙᴏ 🚶‍♂️",
-"ᴄᴏɴᴛɪɢᴏ ᴍᴇ sᴀʟᴇɴ ʟᴀs ᴘᴀʟᴀʙʀᴀs 💬",
-"ᴜɴᴀ ᴛᴀʀᴅᴇ ᴄᴏɴᴛɪɢᴏ sᴜᴇɴᴀ ᴘᴇʀғᴇᴄᴛᴀ 🌇",
-"ɢᴀɴᴀs ᴅᴇ ᴛᴏᴅᴏ ᴘᴇʀᴏ sᴏʟᴏ ᴄᴏɴᴛɪɢᴏ 💙",
-"sᴏʟᴏ ᴄᴏᴍᴘᴀʀᴛɪʀ ᴛɪᴇᴍᴘᴏ 🤍","ᴄᴏɴᴛɪɢᴏ ɴᴏ ʜᴀᴄᴇ ғᴀʟᴛᴀ ᴘʟᴀɴ 💙",
-"ᴍᴇ ɢᴜsᴛᴀ sᴏʟᴏ ᴇsᴛᴀʀ ᴄᴏɴᴛɪɢᴏ 🌙",
-"ᴄᴏɴᴛɪɢᴏ ᴛᴏᴅᴏ sᴇ sɪᴇɴᴛᴇ ᴛʀᴀɴǫᴜɪʟᴏ 🌌",
-"ǫᴜᴇ́ᴅᴀᴛᴇ ᴜɴ ʀᴀᴛᴏ ⏳","ᴍᴇ ɢᴜsᴛᴀ ᴇsᴛᴏ 💙",
-"ᴀǫᴜɪ́ ᴇsᴛᴏʏ 🤍","ᴀ ᴜɴᴀ ᴘᴀʟᴀʙʀᴀ ᴅᴇ ᴅɪsᴛᴀɴᴄɪᴀ 💬",
-"ᴄᴜᴀɴᴅᴏ ǫᴜɪᴇʀᴀs ✨","sɪɴ ᴀᴘᴜʀᴏs 🌙",
-"ʏᴏ ᴛᴇ ʜᴀɢᴏ sᴏɴʀᴇɪʀ 😊","ᴛᴜ́ ᴍᴇ ᴅɪʀᴀ́s 💙",
-"sɪ ɴᴏs ʟᴇᴇᴍᴏs 💬","ǫᴜᴇ ᴄᴏɴᴛɪɴᴜᴇ ᴇsᴛᴇ ᴄᴜᴇɴᴛᴏ 🌌"
+"ǫᴜɪᴇʀᴏ sᴇʀ ᴘᴀʀᴛᴇ ᴅᴇ ᴛᴜ ᴜɴɪᴠᴇʀsᴏ 🌌","ɴᴏ sᴇ́ ǫᴜᴇ́ ᴛɪᴇɴᴇs, ᴘᴇʀᴏ ᴍᴇ ɢᴜsᴛᴀ 💙"
 ];
 
-// función aleatoria
+// función random
 function obtenerFrasesAleatorias(lista, cantidad){
     let copia = [...lista];
     let seleccion = [];
@@ -150,10 +146,8 @@ function obtenerFrasesAleatorias(lista, cantidad){
     return seleccion;
 }
 
-// SOLO 20
 let frases = obtenerFrasesAleatorias(todasFrases, 20);
 
-// ================= CREAR TEXTOS =================
 let textSprites = [];
 
 function createText(text, angle, radius){
@@ -186,25 +180,6 @@ function createText(text, angle, radius){
     textSprites.push(sprite);
 }
 
-// ================= DISTRIBUCION EN ORBITAS =================
-let rings = 4;
-let perRing = Math.ceil(frases.length / rings);
-
-frases.forEach((f, i)=>{
-
-    let ring = Math.floor(i / perRing);
-    let angle = (i % perRing) * (Math.PI*2 / perRing);
-    let radius = 8 + ring * 4;
-
-    createText(f, angle, radius);
-});
-
-
-// crear todas
-frases.forEach((f,i)=>{
-    createText(f, i*0.6, 10 + Math.random()*10);
-});
-
 // ================= INTERACCION =================
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
@@ -215,7 +190,6 @@ window.addEventListener("click", e=>{
     mouse.y = -(e.clientY / window.innerHeight)*2 + 1;
 
     raycaster.setFromCamera(mouse, camera);
-
     const intersects = raycaster.intersectObjects(textSprites);
 
     if(intersects.length > 0){
@@ -232,11 +206,41 @@ window.addEventListener("click", e=>{
     }
 });
 
+// ================= CREAR FRASES =================
+function iniciarFrases(){
+
+    let rings = 4;
+    let perRing = Math.ceil(frases.length / rings);
+
+    frases.forEach((f, i)=>{
+
+        let ring = Math.floor(i / perRing);
+        let angle = (i % perRing) * (Math.PI*2 / perRing);
+        let radius = 8 + ring * 4;
+
+        createText(f, angle, radius);
+    });
+}
+
 // ================= ANIMATE =================
+let startTime = Date.now();
+let forming = true;
+
 function animate(){
     requestAnimationFrame(animate);
 
-    // direccion camara
+    let elapsed = (Date.now() - startTime)/1000;
+
+    if(forming){
+        let progress = Math.min(elapsed/3,1);
+        galaxy.scale.set(progress,progress,progress);
+
+        if(progress>=1){
+            forming = false;
+            iniciarFrases();
+        }
+    }
+
     camera.rotation.order = "YXZ";
     camera.rotation.y = yaw;
     camera.rotation.x = pitch;
@@ -259,4 +263,15 @@ function animate(){
 }
 
 animate();
+
+// resize
+window.addEventListener("resize",()=>{
+    camera.aspect = innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth,window.innerHeight);
+});
+
 </script>
+
+</body>
+</html>
