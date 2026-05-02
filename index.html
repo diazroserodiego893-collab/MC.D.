@@ -26,45 +26,43 @@ function resize(){
 resize();
 window.addEventListener("resize", resize);
 
-/* 🎮 CONTROL NUEVO (PC + CELULAR) */
+/* 🎮 CONTROL (PC + CELULAR) */
 let angleX = 0, angleY = 0, zoom = 700;
 
-/* 🖱️ PC sin click */
+/* 🖱️ mouse libre */
 window.addEventListener("mousemove", e => {
     angleY += e.movementX * 0.003;
     angleX += e.movementY * 0.003;
 });
 
-/* 📱 TOUCH */
-let lastTouchX = null;
-let lastTouchY = null;
+/* 📱 touch */
+let lastTouchX=null,lastTouchY=null;
 
-window.addEventListener("touchstart", e => {
-    let t = e.touches[0];
-    lastTouchX = t.clientX;
-    lastTouchY = t.clientY;
+window.addEventListener("touchstart", e=>{
+    let t=e.touches[0];
+    lastTouchX=t.clientX;
+    lastTouchY=t.clientY;
 });
 
-window.addEventListener("touchmove", e => {
-    let t = e.touches[0];
+window.addEventListener("touchmove", e=>{
+    let t=e.touches[0];
+    let dx=t.clientX-lastTouchX;
+    let dy=t.clientY-lastTouchY;
 
-    let dx = t.clientX - lastTouchX;
-    let dy = t.clientY - lastTouchY;
+    angleY+=dx*0.004;
+    angleX+=dy*0.004;
 
-    angleY += dx * 0.004;
-    angleX += dy * 0.004;
-
-    lastTouchX = t.clientX;
-    lastTouchY = t.clientY;
+    lastTouchX=t.clientX;
+    lastTouchY=t.clientY;
 });
 
-/* 🔍 ZOOM */
+/* 🔍 zoom */
 window.addEventListener("wheel",e=>{
-    zoom += e.deltaY*0.3;
-    zoom = Math.max(300, Math.min(1400, zoom));
+    zoom+=e.deltaY*0.3;
+    zoom=Math.max(300,Math.min(1400,zoom));
 });
 
-/* ⭐ ESTRELLAS */
+/* ⭐ estrellas */
 let stars=[];
 for(let i=0;i<700;i++){
     stars.push({
@@ -76,7 +74,7 @@ for(let i=0;i<700;i++){
     });
 }
 
-/* 🌠 FUGACES */
+/* 🌠 fugaces */
 let shootingStars=[];
 setInterval(()=>{
     if(document.hidden) return;
@@ -91,7 +89,7 @@ setInterval(()=>{
     }
 },800);
 
-/* 💬 FRASES (todas intactas) */
+/* 💬 FRASES */
 let frases = [
 "ᴍᴇ ɢᴜsᴛᴀʀɪ́ᴀ ᴄᴏɴᴏᴄᴇʀᴛᴇ ✨",
 "sᴏʟᴏ ᴘɪᴇɴsᴏ ᴇɴ ᴛɪ 💭",
@@ -181,4 +179,96 @@ let frases = [
 "ǫᴜᴇ ᴄᴏɴᴛɪɴᴜᴇ ᴇsᴛᴇ ᴄᴜᴇɴᴛᴏ 🌌"
 ];
 
-/* 🔽 TODO lo demás queda EXACTAMENTE igual (tu galaxia no se toca) */
+/* 🌌 GALAXIA */
+let particles=[];
+let total=4500, arms=4;
+
+for(let i=0;i<total;i++){
+    let radius=Math.random()*420;
+    let branch=(i%arms)*(Math.PI*2/arms);
+    let spin=radius*0.025;
+    let angle=branch+spin;
+
+    let offset=(Math.random()-0.5)*40;
+
+    let tx=Math.cos(angle)*(radius+offset);
+    let tz=Math.sin(angle)*(radius+offset);
+    let ty=(Math.random()-0.5)*30;
+
+    particles.push({
+        x:(Math.random()-0.5)*2500,
+        y:(Math.random()-0.5)*2500,
+        z:(Math.random()-0.5)*2500,
+        tx,ty,tz,
+        size:Math.random()*1.4
+    });
+}
+
+/* ⏳ */
+let start=Date.now();
+let duration=6000;
+let globalRotation=0;
+
+function draw(){
+
+    ctx.fillStyle="black";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    let t=(Date.now()-start)/duration;
+    if(t>1) t=1;
+
+    globalRotation+=0.002;
+
+    /* estrellas */
+    stars.forEach(s=>{
+        s.blink+=0.08;
+        let b=0.5+Math.sin(s.blink)*0.5;
+        drawPoint(s.x,s.y,s.z,`rgba(255,255,255,${b})`,s.size);
+    });
+
+    /* galaxia */
+    particles.forEach(p=>{
+        let x=p.x+(p.tx-p.x)*t;
+        let y=p.y+(p.ty-p.y)*t;
+        let z=p.z+(p.tz-p.z)*t;
+
+        if(t===1){
+            let ang=Math.atan2(z,x)+globalRotation;
+            let dist=Math.sqrt(x*x+z*z);
+            x=Math.cos(ang)*dist;
+            z=Math.sin(ang)*dist;
+        }
+
+        drawPoint(x,y,z,"rgb(120,170,255)",p.size);
+    });
+
+    requestAnimationFrame(draw);
+}
+
+function drawPoint(x,y,z,color,size){
+    let cosY=Math.cos(angleY), sinY=Math.sin(angleY);
+    let dx=cosY*x - sinY*z;
+    let dz=sinY*x + cosY*z;
+
+    let cosX=Math.cos(angleX), sinX=Math.sin(angleX);
+    let dy=cosX*y - sinX*dz;
+    dz=sinX*y + cosX*dz;
+
+    if(dz<-zoom+50) return;
+
+    let scale=zoom/(zoom+dz);
+
+    let px=dx*scale + canvas.width/2;
+    let py=dy*scale + canvas.height/2;
+
+    ctx.fillStyle=color;
+    ctx.beginPath();
+    ctx.arc(px,py,size*scale,0,Math.PI*2);
+    ctx.fill();
+}
+
+draw();
+</script>
+
+</body>
+</html>
