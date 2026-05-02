@@ -2,309 +2,328 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Galaxia</title>
+<title>Galaxia Final PRO</title>
 
 <style>
-body {
-    margin: 0;
-    overflow: hidden;
-    background: black;
-    font-family: Arial, sans-serif;
-}
-
-#watermark {
-    position: fixed;
-    bottom: 10px;
-    right: 15px;
-    color: rgba(255,255,255,0.7);
-    text-shadow: 0 0 10px rgba(255,255,255,0.8);
-    font-size: 14px;
-}
+body{margin:0;overflow:hidden;background:black;}
+canvas{display:block;}
 </style>
 </head>
-
 <body>
 
-<div id="watermark">
-De: Diego.D<br>Para: Maria.C
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+<canvas id="c"></canvas>
 
 <script>
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
 
-// ================= SCENE =================
-const scene = new THREE.Scene();
-
-const camera = new THREE.PerspectiveCamera(
-    75,
-    window.innerWidth/window.innerHeight,
-    0.1,
-    1000
-);
-
-const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
-
-camera.position.set(0,10,40);
-
-// ================= MOUSE LOOK =================
-let yaw = 0;
-let pitch = 0;
-
-document.addEventListener("mousemove", e => {
-    yaw -= e.movementX * 0.002;
-    pitch -= e.movementY * 0.002;
-    pitch = Math.max(-Math.PI/2, Math.min(Math.PI/2, pitch));
-});
-
-// ================= MOVIMIENTO =================
-let keys = {};
-document.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
-document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
-
-// ================= ESTRELLAS =================
-const starGeo = new THREE.BufferGeometry();
-let starPositions = [];
-
-for(let i=0;i<5000;i++){
-    starPositions.push(
-        (Math.random()-0.5)*300,
-        (Math.random()-0.5)*300,
-        (Math.random()-0.5)*300
-    );
+function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 }
+resize();
+window.addEventListener("resize", resize);
 
-starGeo.setAttribute("position", new THREE.Float32BufferAttribute(starPositions,3));
+/* 🎮 CONTROL (EL QUE FUNCIONABA) */
+let angleX = 0, angleY = 0, zoom = 700;
+let dragging=false;
 
-const stars = new THREE.Points(
-    starGeo,
-    new THREE.PointsMaterial({color:0xffffff,size:0.6})
-);
+window.addEventListener("mousedown",()=>dragging=true);
+window.addEventListener("mouseup",()=>dragging=false);
 
-scene.add(stars);
-
-// ================= GALAXIA =================
-const galaxy = new THREE.Group();
-scene.add(galaxy);
-
-const positions = [];
-const colors = [];
-
-for(let i=0;i<9000;i++){
-
-    let radius = Math.random()*20;
-    let spin = radius * 1.5;
-
-    let x = Math.cos(spin)*radius;
-    let z = Math.sin(spin)*radius;
-    let y = (Math.random()-0.5)*1; // plano
-
-    positions.push(x,y,z);
-
-    let color = new THREE.Color(
-        0.5 + Math.random()*0.5,
-        0.5,
-        1
-    );
-
-    colors.push(color.r,color.g,color.b);
-}
-
-const geo = new THREE.BufferGeometry();
-geo.setAttribute("position", new THREE.Float32BufferAttribute(positions,3));
-geo.setAttribute("color", new THREE.Float32BufferAttribute(colors,3));
-
-const points = new THREE.Points(
-    geo,
-    new THREE.PointsMaterial({size:0.25,vertexColors:true})
-);
-
-galaxy.add(points);
-
-// ================= FRASES =================
-let todasFrases = [/* 👇 TODAS TUS FRASES */
-"ᴍᴇ ɢᴜsᴛᴀʀɪ́ᴀ ᴄᴏɴᴏᴄᴇʀᴛᴇ ✨","sᴏʟᴏ ᴘɪᴇɴsᴏ ᴇɴ ᴛɪ 💭","ᴍɪ ᴍᴏᴛɪᴠᴏ ᴇʀᴇs ᴛᴜ́ 💙",
-"ᴍɪ sᴜᴇʀᴛᴇ ғᴜᴇ ᴄᴏɴᴏᴄᴇʀᴛᴇ ✨","ɴᴏ ᴘᴇʀᴅᴀᴍᴏs ʟᴀ ᴏᴘᴏʀᴛᴜɴɪᴅᴀᴅ 💫",
-"ɴᴏ ᴛᴇ sᴀᴄᴏ ᴅᴇ ᴍɪ ᴍᴇɴᴛᴇ 🌙","ᴅᴇᴊᴇᴍᴏs ᴇʟ ᴍɪᴇᴅᴏ ✨","¿ᴄʜᴀʀʟᴀ ʏ ᴜɴ ʜᴇʟᴀᴅᴏ? 🍦",
-"ᴇsᴀ sᴏɴʀɪsᴀ ᴛᴜʏᴀ 😊","ᴍɪ ᴅᴇʙɪʟɪᴅᴀᴅ 💙","ɪʟᴜᴍɪɴᴀs ᴍɪ ᴠɪᴅᴀ ✨",
-"ʟᴀ ᴇsᴛʀᴇʟʟᴀ ǫᴜᴇ ᴍᴀ́s ʙʀɪʟʟᴀ ᴇʀᴇs ᴛᴜ́ 🌟","ᴇɴᴛʀᴇ ᴛᴀɴᴛᴀs ᴇsᴛʀᴇʟʟᴀs, ᴛᴜ́ 💫",
-"ǫᴜɪᴇʀᴏ sᴇʀ ᴘᴀʀᴛᴇ ᴅᴇ ᴛᴜ ᴜɴɪᴠᴇʀsᴏ 🌌","ɴᴏ sᴇ́ ǫᴜᴇ́ ᴛɪᴇɴᴇs, ᴘᴇʀᴏ ᴍᴇ ɢᴜsᴛᴀ 💙",
-"ᴛᴏᴅᴏ ᴍᴇ ʟʟᴇᴠᴀ ᴀ ᴛɪ 💫","ᴛᴜ ʟᴜᴢ ᴍᴇ ᴄᴀʟᴍᴀ 🌙","¿ʏ sɪ ᴅᴇsᴄᴜʙʀɪᴍᴏs ᴜɴ ᴍᴜɴᴅᴏ? 🌍",
-"ᴘᴇʀғᴇᴄᴛᴀ ᴄᴏᴍᴏ ᴜɴ ᴇᴄʟɪᴘsᴇ 🌘","ᴘɪᴇɴsᴏ ᴇɴ ᴛɪ ᴀᴜɴ ᴅᴇ ɴᴏᴄʜᴇ 🌙",
-"ᴛɪᴇɴᴇs ᴇsᴇ ᴀʟɢᴏ ǫᴜᴇ ᴍᴇ ᴇɴᴄᴀɴᴛᴀ 💙","ǫᴜᴇ́ ʙᴏɴɪᴛᴏ ᴄʀᴜᴢᴀʀɴᴏs ✨",
-"ᴜɴᴀ ᴘᴇǫᴜᴇɴ̃ᴀ ᴄᴏɪɴᴄɪᴅᴇɴᴄɪᴀ 💫","ᴍᴇ ʜᴀᴄᴇs sᴇʀ ᴍᴇᴊᴏʀ 🌙",
-"ᴛɪᴇɴᴇs ᴀʟɢᴏ ǫᴜᴇ ɴᴏ ᴇxᴘʟɪᴄᴏ 💙","ᴄᴏɴᴛɪɢᴏ ᴛᴏᴅᴏ ᴇs ᴍᴇᴊᴏʀ 💙",
-"ᴄᴜʀɪᴏsɪᴅᴀᴅ ᴅᴇ ᴛɪ 👀","ᴇɴᴄᴏɴᴛʀᴀʀᴛᴇ ғᴜᴇ ʟᴏ ᴍᴇᴊᴏʀ 💙",
-"ᴍᴇ ᴇɴᴄᴀɴᴛᴀs 💙","ǫᴜᴇ sᴜᴇʀᴛᴇ ᴄᴏɪɴᴄɪᴅɪʀ ᴄᴏɴᴛɪɢᴏ 💫",
-"¿ʏ sɪ ʜᴀʙʟᴀᴍᴏs? 💬","¿ᴜɴ ʀᴀᴛᴏ ᴍᴀ́s? ⏳","¿ᴛᴇ ᴅᴇᴊᴀs ᴄᴏɴᴏᴄᴇʀ? ✨",
-"¿ǫᴜᴇ́ ᴛᴀʟ ᴜɴ ʜᴏʟᴀ? 👋","¿ᴄᴏɪɴᴄɪᴅɪᴍᴏs ʟᴜᴇɢᴏ? 💫","¿ᴛɪᴇɴᴇs 5 ᴍɪɴᴜᴛᴏs? ⏱️",
-"¿ᴛᴇ ᴄᴜᴇɴᴛᴏ ᴀʟɢᴏ? 🤍","¿ᴍᴇ ᴅᴀs ᴄʜᴀɴᴄᴇ? 💙","¿ʏ sɪ sɪ́? ✨",
-"sɪʟᴇɴᴄɪᴏ ʙᴏɴɪᴛᴏ ᴄᴏɴᴛɪɢᴏ 🌙","ᴅᴇᴛɪᴇɴᴇs ᴇʟ ᴛɪᴇᴍᴘᴏ ⏳",
-"ᴍᴇ ǫᴜᴇᴅᴏ ᴄᴏɴ ᴇsᴇ ǫᴜɪᴢᴀ́ ᴄᴏɴᴛɪɢᴏ 💫",
-"ᴍᴇ ɢᴜsᴛᴀ ᴄᴜᴀɴᴅᴏ sᴏᴍᴏs sᴏʟᴏ ɴᴏsᴏᴛʀᴏs 🤍",
-"ᴍᴇ ɢᴜsᴛᴀ ʟᴀ ɪᴅᴇᴀ ᴅᴇ ɴᴏsᴏᴛʀᴏs 💙",
-"ᴛɪᴇᴍᴘᴏ ᴅᴇᴛᴇɴɪᴅᴏ ⏳","ʟᴀ ᴍɪʀᴀᴅᴀ ǫᴜᴇ ᴍᴇ ᴇɴᴠᴜᴇʟᴠᴇ 👀",
-"sᴏʟᴏ ǫᴜɪᴇʀᴏ ᴜɴᴀ sᴏɴʀɪsᴀ 😊","ᴜɴᴀ ʜɪsᴛᴏʀɪᴀ ᴘᴏʀ ᴇsᴄʀɪʙɪʀ 📖",
-"ᴄᴏɴᴛɪɢᴏ ᴛᴏᴅᴏ ᴘᴜᴇᴅᴇ ᴘᴀsᴀʀ ✨","ᴇsᴛᴏ ᴇʀᴀ ᴘᴀʀᴀ ᴛɪ 🎁",
-"ᴜɴ ᴅᴇᴛᴀʟʟᴇ ᴘᴜᴇᴅᴇ ᴍᴇᴊᴏʀᴀʀ ᴛᴜ ᴅɪ́ᴀ ✨","ᴏᴊᴀʟᴀ́ ᴛᴇ ɢᴜsᴛᴀʀᴀ 💙",
-"ᴘᴇɴsᴀɴᴅᴏ ᴇɴ ᴛɪ 🌙","sᴏʟᴏ ǫᴜᴇʀɪ́ᴀ ᴀʟᴇɢʀᴀʀᴛᴇ 😊",
-"ᴍɪ ᴍᴏᴛɪᴠᴏ ᴇʀᴇs ᴛᴜ́ 💙","sᴏɴʀɪsᴀ ʙᴜsᴄᴀᴅᴀ 😊",
-"ʜᴇᴄʜᴏ ᴄᴏɴ ɢᴀɴᴀs ✨","sᴏʟᴏ ᴘᴀʀᴀ ᴛɪ 💙",
-"ᴇsᴘᴇʀᴏ ʟᴀ ᴏᴘᴏʀᴛᴜɴɪᴅᴀᴅ 💫","ᴄʜᴀʀʟᴀ sɪɴ ʀᴇʟᴏᴊ ☕",
-"ʜᴇʟᴀᴅᴏ ʏ ɴᴀᴅᴀ ᴍᴀ́s 🍦","ᴄᴀᴍɪɴᴀʀ sɪɴ ʀᴜᴍʙᴏ 🚶‍♂️",
-"ᴄᴏɴᴛɪɢᴏ ᴍᴇ sᴀʟᴇɴ ʟᴀs ᴘᴀʟᴀʙʀᴀs 💬",
-"ᴜɴᴀ ᴛᴀʀᴅᴇ ᴄᴏɴᴛɪɢᴏ sᴜᴇɴᴀ ᴘᴇʀғᴇᴄᴛᴀ 🌇",
-"ɢᴀɴᴀs ᴅᴇ ᴛᴏᴅᴏ ᴘᴇʀᴏ sᴏʟᴏ ᴄᴏɴᴛɪɢᴏ 💙",
-"sᴏʟᴏ ᴄᴏᴍᴘᴀʀᴛɪʀ ᴛɪᴇᴍᴘᴏ 🤍","ᴄᴏɴᴛɪɢᴏ ɴᴏ ʜᴀᴄᴇ ғᴀʟᴛᴀ ᴘʟᴀɴ 💙",
-"ᴍᴇ ɢᴜsᴛᴀ sᴏʟᴏ ᴇsᴛᴀʀ ᴄᴏɴᴛɪɢᴏ 🌙",
-"ᴄᴏɴᴛɪɢᴏ ᴛᴏᴅᴏ sᴇ sɪᴇɴᴛᴇ ᴛʀᴀɴǫᴜɪʟᴏ 🌌",
-"ǫᴜᴇ́ᴅᴀᴛᴇ ᴜɴ ʀᴀᴛᴏ ⏳","ᴍᴇ ɢᴜsᴛᴀ ᴇsᴛᴏ 💙",
-"ᴀǫᴜɪ́ ᴇsᴛᴏʏ 🤍","ᴀ ᴜɴᴀ ᴘᴀʟᴀʙʀᴀ ᴅᴇ ᴅɪsᴛᴀɴᴄɪᴀ 💬",
-"ᴄᴜᴀɴᴅᴏ ǫᴜɪᴇʀᴀs ✨","sɪɴ ᴀᴘᴜʀᴏs 🌙",
-"ʏᴏ ᴛᴇ ʜᴀɢᴏ sᴏɴʀᴇɪʀ 😊","ᴛᴜ́ ᴍᴇ ᴅɪʀᴀ́s 💙",
-"sɪ ɴᴏs ʟᴇᴇᴍᴏs 💬","ǫᴜᴇ ᴄᴏɴᴛɪɴᴜᴇ ᴇsᴛᴇ ᴄᴜᴇɴᴛᴏ 🌌"
-];
-
-// función random
-function obtenerFrasesAleatorias(lista, cantidad){
-    let copia = [...lista];
-    let seleccion = [];
-
-    for(let i=0;i<cantidad;i++){
-        let index = Math.floor(Math.random()*copia.length);
-        seleccion.push(copia[index]);
-        copia.splice(index,1);
-    }
-    return seleccion;
-}
-
-let frases = obtenerFrasesAleatorias(todasFrases, 20);
-
-let textSprites = [];
-
-function createText(text, angle, radius){
-
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-
-    canvas.width = 512;
-    canvas.height = 128;
-
-    ctx.fillStyle = "white";
-    ctx.font = "28px Arial";
-    ctx.fillText(text, 20, 64);
-
-    const texture = new THREE.CanvasTexture(canvas);
-
-    const sprite = new THREE.Sprite(
-        new THREE.SpriteMaterial({map:texture,transparent:true})
-    );
-
-    sprite.position.set(
-        Math.cos(angle)*radius,
-        0,
-        Math.sin(angle)*radius
-    );
-
-    sprite.scale.set(10,3,1);
-
-    galaxy.add(sprite);
-    textSprites.push(sprite);
-}
-
-// ================= INTERACCION =================
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-
-window.addEventListener("click", e=>{
-
-    mouse.x = (e.clientX / window.innerWidth)*2 - 1;
-    mouse.y = -(e.clientY / window.innerHeight)*2 + 1;
-
-    raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObjects(textSprites);
-
-    if(intersects.length > 0){
-
-        textSprites.forEach(s=>{
-            s.scale.set(10,3,1);
-            s.material.opacity = 0.3;
-        });
-
-        let selected = intersects[0].object;
-
-        selected.scale.set(16,5,1);
-        selected.material.opacity = 1;
+window.addEventListener("mousemove",e=>{
+    if(dragging){
+        angleY += e.movementX*0.004;
+        angleX += e.movementY*0.004;
     }
 });
 
-// ================= CREAR FRASES =================
-function iniciarFrases(){
+window.addEventListener("wheel",e=>{
+    zoom += e.deltaY*0.3;
+    zoom = Math.max(300, Math.min(1400, zoom));
+});
 
-    let rings = 4;
-    let perRing = Math.ceil(frases.length / rings);
-
-    frases.forEach((f, i)=>{
-
-        let ring = Math.floor(i / perRing);
-        let angle = (i % perRing) * (Math.PI*2 / perRing);
-        let radius = 8 + ring * 4;
-
-        createText(f, angle, radius);
+/* ⭐ ESTRELLAS */
+let stars=[];
+for(let i=0;i<1200;i++){
+    stars.push({
+        x:(Math.random()-0.5)*4000,
+        y:(Math.random()-0.5)*4000,
+        z:(Math.random()-0.5)*4000,
+        size:Math.random()*2,
+        blink:Math.random()*100
     });
 }
 
-// ================= ANIMATE =================
-let startTime = Date.now();
-let forming = true;
+/* 🌠 FUGACES */
+let shootingStars=[];
+setInterval(()=>{
+    if(shootingStars.length<3 && Math.random()<0.5){
+        shootingStars.push({
+            x:Math.random()*canvas.width,
+            y:Math.random()*canvas.height/2,
+            vx:-12-Math.random()*6,
+            vy:6+Math.random()*3,
+            life:0,max:50
+        });
+    }
+},800);
 
-function animate(){
-    requestAnimationFrame(animate);
+/* 💬 FRASES (USA TUS 80 AQUÍ) */
+let frases = [
+"ᴍᴇ ɢᴜsᴛᴀʀɪ́ᴀ ᴄᴏɴᴏᴄᴇʀᴛᴇ ✨",
+"sᴏʟᴏ ᴘɪᴇɴsᴏ ᴇɴ ᴛɪ 💭",
+"ᴍɪ ᴍᴏᴛɪᴠᴏ ᴇʀᴇs ᴛᴜ́ 💙",
+"ᴍɪ sᴜᴇʀᴛᴇ ғᴜᴇ ᴄᴏɴᴏᴄᴇʀᴛᴇ ✨",
+"ɴᴏ ᴘᴇʀᴅᴀᴍᴏs ʟᴀ ᴏᴘᴏʀᴛᴜɴɪᴅᴀᴅ 💫",
+"ɴᴏ ᴛᴇ sᴀᴄᴏ ᴅᴇ ᴍɪ ᴍᴇɴᴛᴇ 🌙",
+"ᴅᴇᴊᴇᴍᴏs ᴇʟ ᴍɪᴇᴅᴏ ✨",
+"¿ᴄʜᴀʀʟᴀ ʏ ᴜɴ ʜᴇʟᴀᴅᴏ? 🍦",
+"ᴇsᴀ sᴏɴʀɪsᴀ ᴛᴜʏᴀ 😊",
+"ᴍɪ ᴅᴇʙɪʟɪᴅᴀᴅ 💙",
+"ɪʟᴜᴍɪɴᴀs ᴍɪ ᴠɪᴅᴀ ✨",
+"ʟᴀ ᴇsᴛʀᴇʟʟᴀ ǫᴜᴇ ᴍᴀ́s ʙʀɪʟʟᴀ ᴇʀᴇs ᴛᴜ́ 🌟",
+"ᴇɴᴛʀᴇ ᴛᴀɴᴛᴀs ᴇsᴛʀᴇʟʟᴀs, ᴛᴜ́ 💫",
+"ǫᴜɪᴇʀᴏ sᴇʀ ᴘᴀʀᴛᴇ ᴅᴇ ᴛᴜ ᴜɴɪᴠᴇʀsᴏ 🌌",
+"ɴᴏ sᴇ́ ǫᴜᴇ́ ᴛɪᴇɴᴇs, ᴘᴇʀᴏ ᴍᴇ ɢᴜsᴛᴀ 💙",
+"ᴛᴏᴅᴏ ᴍᴇ ʟʟᴇᴠᴀ ᴀ ᴛɪ 💫",
+"ᴛᴜ ʟᴜᴢ ᴍᴇ ᴄᴀʟᴍᴀ 🌙",
+"¿ʏ sɪ ᴅᴇsᴄᴜʙʀɪᴍᴏs ᴜɴ ᴍᴜɴᴅᴏ? 🌍",
+"ᴘᴇʀғᴇᴄᴛᴀ ᴄᴏᴍᴏ ᴜɴ ᴇᴄʟɪᴘsᴇ 🌘",
+"ᴘɪᴇɴsᴏ ᴇɴ ᴛɪ ᴀᴜɴ ᴅᴇ ɴᴏᴄʜᴇ 🌙",
+"ᴛɪᴇɴᴇs ᴇsᴇ ᴀʟɢᴏ ǫᴜᴇ ᴍᴇ ᴇɴᴄᴀɴᴛᴀ 💙",
+"ǫᴜᴇ́ ʙᴏɴɪᴛᴏ ᴄʀᴜᴢᴀʀɴᴏs ✨",
+"ᴜɴᴀ ᴘᴇǫᴜᴇɴ̃ᴀ ᴄᴏɪɴᴄɪᴅᴇɴᴄɪᴀ 💫",
+"ᴍᴇ ʜᴀᴄᴇs sᴇʀ ᴍᴇᴊᴏʀ 🌙",
+"ᴛɪᴇɴᴇs ᴀʟɢᴏ ǫᴜᴇ ɴᴏ ᴇxᴘʟɪᴄᴏ 💙",
+"ᴄᴏɴᴛɪɢᴏ ᴛᴏᴅᴏ ᴇs ᴍᴇᴊᴏʀ 💙",
+"ᴄᴜʀɪᴏsɪᴅᴀᴅ ᴅᴇ ᴛɪ 👀",
+"ᴇɴᴄᴏɴᴛʀᴀʀᴛᴇ ғᴜᴇ ʟᴏ ᴍᴇᴊᴏʀ 💙",
+"ᴍᴇ ᴇɴᴄᴀɴᴛᴀs 💙",
+"ǫᴜᴇ sᴜᴇʀᴛᴇ ᴄᴏɪɴᴄɪᴅɪʀ ᴄᴏɴᴛɪɢᴏ 💫",
+"¿ʏ sɪ ʜᴀʙʟᴀᴍᴏs? 💬",
+"¿ᴜɴ ʀᴀᴛᴏ ᴍᴀ́s? ⏳",
+"¿ᴛᴇ ᴅᴇᴊᴀs ᴄᴏɴᴏᴄᴇʀ? ✨",
+"¿ǫᴜᴇ́ ᴛᴀʟ ᴜɴ ʜᴏʟᴀ? 👋",
+"¿ᴄᴏɪɴᴄɪᴅɪᴍᴏs ʟᴜᴇɢᴏ? 💫",
+"¿ᴛɪᴇɴᴇs 5 ᴍɪɴᴜᴛᴏs? ⏱️",
+"¿ᴛᴇ ᴄᴜᴇɴᴛᴏ ᴀʟɢᴏ? 🤍",
+"¿ᴍᴇ ᴅᴀs ᴄʜᴀɴᴄᴇ? 💙",
+"¿ʏ sɪ sɪ́? ✨",
+"sɪʟᴇɴᴄɪᴏ ʙᴏɴɪᴛᴏ ᴄᴏɴᴛɪɢᴏ 🌙",
+"ᴅᴇᴛɪᴇɴᴇs ᴇʟ ᴛɪᴇᴍᴘᴏ ⏳",
+"ᴍᴇ ǫᴜᴇᴅᴏ ᴄᴏɴ ᴇsᴇ ǫᴜɪᴢᴀ́ ᴄᴏɴᴛɪɢᴏ 💫",
+"ᴍᴇ ɢᴜsᴛᴀ ᴄᴜᴀɴᴅᴏ sᴏᴍᴏs sᴏʟᴏ ɴᴏsᴏᴛʀᴏs 🤍",
+"ᴍᴇ ɢᴜsᴛᴀ ʟᴀ ɪᴅᴇᴀ ᴅᴇ ɴᴏsᴏᴛʀᴏs 💙",
+"ᴛɪᴇᴍᴘᴏ ᴅᴇᴛᴇɴɪᴅᴏ ⏳",
+"ʟᴀ ᴍɪʀᴀᴅᴀ ǫᴜᴇ ᴍᴇ ᴇɴᴠᴜᴇʟᴠᴇ 👀",
+"sᴏʟᴏ ǫᴜɪᴇʀᴏ ᴜɴᴀ sᴏɴʀɪsᴀ 😊",
+"ᴜɴᴀ ʜɪsᴛᴏʀɪᴀ ᴘᴏʀ ᴇsᴄʀɪʙɪʀ 📖",
+"ᴄᴏɴᴛɪɢᴏ ᴛᴏᴅᴏ ᴘᴜᴇᴅᴇ ᴘᴀsᴀʀ ✨",
+"ᴇsᴛᴏ ᴇʀᴀ ᴘᴀʀᴀ ᴛɪ 🎁",
+"ᴜɴ ᴅᴇᴛᴀʟʟᴇ ᴘᴜᴇᴅᴇ ᴍᴇᴊᴏʀᴀʀ ᴛᴜ ᴅɪ́ᴀ ✨",
+"ᴏᴊᴀʟᴀ́ ᴛᴇ ɢᴜsᴛᴀʀᴀ 💙",
+"ᴘᴇɴsᴀɴᴅᴏ ᴇɴ ᴛɪ 🌙",
+"sᴏʟᴏ ǫᴜᴇʀɪ́ᴀ ᴀʟᴇɢʀᴀʀᴛᴇ 😊",
+"sᴏɴʀɪsᴀ ʙᴜsᴄᴀᴅᴀ 😊",
+"ʜᴇᴄʜᴏ ᴄᴏɴ ɢᴀɴᴀs ✨",
+"sᴏʟᴏ ᴘᴀʀᴀ ᴛɪ 💙",
+"ᴇsᴘᴇʀᴏ ʟᴀ ᴏᴘᴏʀᴛᴜɴɪᴅᴀᴅ 💫",
+"ᴄʜᴀʀʟᴀ sɪɴ ʀᴇʟᴏᴊ ☕",
+"ʜᴇʟᴀᴅᴏ ʏ ɴᴀᴅᴀ ᴍᴀ́s 🍦",
+"ᴄᴀᴍɪɴᴀʀ sɪɴ ʀᴜᴍʙᴏ 🚶‍♂️",
+"ᴄᴏɴᴛɪɢᴏ ᴍᴇ sᴀʟᴇɴ ʟᴀs ᴘᴀʟᴀʙʀᴀs 💬",
+"ᴜɴᴀ ᴛᴀʀᴅᴇ ᴄᴏɴᴛɪɢᴏ sᴜᴇɴᴀ ᴘᴇʀғᴇᴄᴛᴀ 🌇",
+"ɢᴀɴᴀs ᴅᴇ ᴛᴏᴅᴏ ᴘᴇʀᴏ sᴏʟᴏ ᴄᴏɴᴛɪɢᴏ 💙",
+"sᴏʟᴏ ᴄᴏᴍᴘᴀʀᴛɪʀ ᴛɪᴇᴍᴘᴏ 🤍",
+"ᴄᴏɴᴛɪɢᴏ ɴᴏ ʜᴀᴄᴇ ғᴀʟᴛᴀ ᴘʟᴀɴ 💙",
+"ᴍᴇ ɢᴜsᴛᴀ sᴏʟᴏ ᴇsᴛᴀʀ ᴄᴏɴᴛɪɢᴏ 🌙",
+"ᴄᴏɴᴛɪɢᴏ ᴛᴏᴅᴏ sᴇ sɪᴇɴᴛᴇ ᴛʀᴀɴǫᴜɪʟᴏ 🌌",
+"ǫᴜᴇ́ᴅᴀᴛᴇ ᴜɴ ʀᴀᴛᴏ ⏳",
+"ᴀǫᴜɪ́ ᴇsᴛᴏʏ 🤍",
+"ᴄᴜᴀɴᴅᴏ ǫᴜɪᴇʀᴀs ✨",
+"sɪɴ ᴀᴘᴜʀᴏs 🌙",
+"ʏᴏ ᴛᴇ ʜᴀɢᴏ sᴏɴʀᴇɪʀ 😊",
+"sɪ ɴᴏs ʟᴇᴇᴍᴏs 💬",
+"ǫᴜᴇ ᴄᴏɴᴛɪɴᴜᴇ ᴇsᴛᴇ ᴄᴜᴇɴᴛᴏ 🌌"
+];
 
-    let elapsed = (Date.now() - startTime)/1000;
+let frasesData=[];
 
-    if(forming){
-        let progress = Math.min(elapsed/3,1);
-        galaxy.scale.set(progress,progress,progress);
+/* 🌌 GALAXIA */
+let particles=[];
+let total=8000, arms=4;
 
-        if(progress>=1){
-            forming = false;
-            iniciarFrases();
+for(let i=0;i<total;i++){
+    let radius=Math.random()*420;
+    let branch=(i%arms)*(Math.PI*2/arms);
+    let spin=radius*0.025;
+    let angle=branch+spin;
+
+    let width=40;
+    let offset=(Math.random()-0.5)*width;
+    let angleNoise=(Math.random()-0.5)*0.15;
+
+    let tx=Math.cos(angle+angleNoise)*(radius+offset);
+    let tz=Math.sin(angle+angleNoise)*(radius+offset);
+
+    let thickness=30*(1-radius/420);
+    let ty=(Math.random()-0.5)*thickness;
+
+    particles.push({
+        x:(Math.random()-0.5)*2500,
+        y:(Math.random()-0.5)*2500,
+        z:(Math.random()-0.5)*2500,
+        tx,ty,tz,
+        size:Math.random()*1.4
+    });
+}
+
+/* ⏳ TIEMPO */
+let start=Date.now();
+let duration=6000;
+let globalRotation=0;
+let nextPhraseIndex=0;
+let phraseTimer=0;
+
+/* 🎬 LOOP */
+function draw(){
+
+    ctx.fillStyle="black";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    let t=(Date.now()-start)/duration;
+    if(t>1) t=1;
+
+    globalRotation+=0.002;
+
+    /* ⭐ fondo */
+    stars.forEach(s=>{
+        s.blink+=0.08;
+        let b=0.5+Math.sin(s.blink)*0.5;
+        drawPoint(s.x,s.y,s.z,`rgba(255,255,255,${b})`,s.size);
+    });
+
+    /* 🌌 galaxia */
+    particles.forEach(p=>{
+        let x=p.x+(p.tx-p.x)*t;
+        let y=p.y+(p.ty-p.y)*t;
+        let z=p.z+(p.tz-p.z)*t;
+
+        if(t===1){
+            let ang=Math.atan2(z,x)+globalRotation;
+            let dist=Math.sqrt(x*x+z*z);
+            x=Math.cos(ang)*dist;
+            z=Math.sin(ang)*dist;
+        }
+
+        drawPoint(x,y,z,"rgb(120,170,255)",p.size);
+    });
+
+    /* 💬 FRASES */
+    if(t===1){
+        phraseTimer++;
+        if(phraseTimer>15 && nextPhraseIndex<frases.length){
+
+            let i=nextPhraseIndex;
+            let radius=120+i*4;
+            let branch=(i%4)*(Math.PI*2/4);
+            let spin=radius*0.025;
+            let angle=branch+spin;
+
+            frasesData.push({
+                texto:frases[i],
+                radius,
+                angle,
+                opacity:0
+            });
+
+            nextPhraseIndex++;
+            phraseTimer=0;
         }
     }
 
-    camera.rotation.order = "YXZ";
-    camera.rotation.y = yaw;
-    camera.rotation.x = pitch;
+    frasesData.forEach(f=>{
+        f.opacity+=0.03;
+        if(f.opacity>1) f.opacity=1;
 
-    let dir = new THREE.Vector3();
-    camera.getWorldDirection(dir);
+        let ang=f.angle+globalRotation;
+        let x=Math.cos(ang)*f.radius;
+        let z=Math.sin(ang)*f.radius;
 
-    if(keys["w"]) camera.position.add(dir.clone().multiplyScalar(0.8));
-    if(keys["s"]) camera.position.add(dir.clone().multiplyScalar(-0.8));
+        let cosY=Math.cos(angleY);
+        let sinY=Math.sin(angleY);
+        let dx=cosY*x - sinY*z;
+        let dz=sinY*x + cosY*z;
 
-    let right = new THREE.Vector3().crossVectors(camera.up, dir).normalize();
+        let cosX=Math.cos(angleX);
+        let sinX=Math.sin(angleX);
+        let dy=cosX*0 - sinX*dz;
+        dz=sinX*0 + cosX*dz;
 
-    if(keys["a"]) camera.position.add(right.clone().multiplyScalar(0.8));
-    if(keys["d"]) camera.position.add(right.clone().multiplyScalar(-0.8));
+        if(dz<-zoom+50) return;
 
-    galaxy.rotation.y += 0.002;
-    stars.rotation.y += 0.0003;
+        let scale=zoom/(zoom+dz);
 
-    renderer.render(scene,camera);
+        let px=dx*scale + canvas.width/2;
+        let py=dy*scale + canvas.height/2;
+
+        ctx.fillStyle=`rgba(255,255,255,${f.opacity})`;
+        ctx.font=`${14*scale}px sans-serif`;
+        ctx.fillText(f.texto,px,py);
+
+        f.angle+=0.002;
+    });
+
+    /* 🌠 fugaces */
+    shootingStars.forEach((s,i)=>{
+        ctx.beginPath();
+        ctx.moveTo(s.x,s.y);
+        ctx.lineTo(s.x+50,s.y-25);
+        ctx.strokeStyle="white";
+        ctx.lineWidth=2;
+        ctx.stroke();
+
+        s.x+=s.vx;
+        s.y+=s.vy;
+        s.life++;
+        if(s.life>s.max) shootingStars.splice(i,1);
+    });
+
+    /* 🖋️ MARCA DE AGUA */
+    ctx.fillStyle = "rgba(180,220,255,0.7)";
+    ctx.font = "14px sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillText("De: Diego.D", canvas.width - 20, canvas.height - 30);
+    ctx.fillText("Para: Maria.C", canvas.width - 20, canvas.height - 10);
+
+    requestAnimationFrame(draw);
 }
 
-animate();
+/* 🧠 PROYECCIÓN */
+function drawPoint(x,y,z,color,size){
+    let cosY=Math.cos(angleY), sinY=Math.sin(angleY);
+    let dx=cosY*x - sinY*z;
+    let dz=sinY*x + cosY*z;
 
-// resize
-window.addEventListener("resize",()=>{
-    camera.aspect = innerWidth/window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(innerWidth,window.innerHeight);
-});
+    let cosX=Math.cos(angleX), sinX=Math.sin(angleX);
+    let dy=cosX*y - sinX*dz;
+    dz=sinX*y + cosX*dz;
 
+    if(dz<-zoom+50) return;
+
+    let scale=zoom/(zoom+dz);
+
+    let px=dx*scale + canvas.width/2;
+    let py=dy*scale + canvas.height/2;
+
+    ctx.fillStyle=color;
+    ctx.beginPath();
+    ctx.arc(px,py,size*scale,0,Math.PI*2);
+    ctx.fill();
+}
+
+draw();
 </script>
 
 </body>
