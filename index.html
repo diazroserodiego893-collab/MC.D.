@@ -79,6 +79,19 @@ let frases = [
 
 let frasesData=[];
 
+// Crear TODAS las frases desde el inicio
+for(let i=0;i<frases.length;i++){
+
+    let radius = 120 + (i*3); // distribución en espiral
+    let angle = (i / frases.length) * Math.PI * 2 * 4; // varias vueltas
+
+    frasesData.push({
+        texto: frases[i],
+        radius: radius,
+        angle: angle
+    });
+}
+
 /* 🌌 GALAXIA */
 let particles=[];
 let total=4000, arms=4;
