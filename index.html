@@ -1,37 +1,3 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Galaxia</title>
-
-<style>
-body {
-    margin: 0;
-    overflow: hidden;
-    background: black;
-    font-family: Arial, sans-serif;
-}
-
-/* Marca de agua */
-#watermark {
-    position: fixed;
-    bottom: 10px;
-    right: 15px;
-    color: rgba(255,255,255,0.7);
-    text-shadow: 0 0 10px rgba(255,255,255,0.8);
-    font-size: 14px;
-}
-</style>
-</head>
-
-<body>
-
-<div id="watermark">
-De: Diego.D<br>Para: Maria.C
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
-
 <script>
 // ================= SCENE =================
 const scene = new THREE.Scene();
@@ -47,12 +13,7 @@ const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// ================= CONTROLES =================
-let keys = {};
-
-document.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
-document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
-
+// ================= MOUSE LOOK =================
 let yaw = 0;
 let pitch = 0;
 
@@ -62,14 +23,18 @@ document.addEventListener("mousemove", e => {
     pitch = Math.max(-Math.PI/2, Math.min(Math.PI/2, pitch));
 });
 
-camera.position.set(0,5,40);
+// ================= MOVIMIENTO =================
+let keys = {};
+document.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
+document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
 
-// ================= ESTRELLAS FONDO =================
+camera.position.set(0,10,40);
+
+// ================= ESTRELLAS =================
 const starGeo = new THREE.BufferGeometry();
-const starCount = 5000;
 let starPositions = [];
 
-for(let i=0;i<starCount;i++){
+for(let i=0;i<5000;i++){
     starPositions.push(
         (Math.random()-0.5)*300,
         (Math.random()-0.5)*300,
@@ -77,76 +42,56 @@ for(let i=0;i<starCount;i++){
     );
 }
 
-starGeo.setAttribute(
-    "position",
-    new THREE.Float32BufferAttribute(starPositions,3)
+starGeo.setAttribute("position", new THREE.Float32BufferAttribute(starPositions,3));
+
+const stars = new THREE.Points(
+    starGeo,
+    new THREE.PointsMaterial({color:0xffffff,size:0.6})
 );
 
-const starMat = new THREE.PointsMaterial({
-    color: 0xffffff,
-    size: 0.6
-});
-
-const stars = new THREE.Points(starGeo, starMat);
 scene.add(stars);
 
 // ================= GALAXIA =================
 const galaxy = new THREE.Group();
 scene.add(galaxy);
 
-const PARTICLE_COUNT = 9000;
 const positions = [];
 const colors = [];
 
-for(let i=0;i<PARTICLE_COUNT;i++){
+for(let i=0;i<9000;i++){
 
     let radius = Math.random()*20;
     let spin = radius * 1.5;
 
-    let x = Math.cos(spin) * radius;
-    let z = Math.sin(spin) * radius;
-    let y = (Math.random()-0.5)*3;
+    let x = Math.cos(spin)*radius;
+    let z = Math.sin(spin)*radius;
+
+    let y = (Math.random()-0.5)*1; // MÁS PLANO
 
     positions.push(x,y,z);
 
-    // colores azul / morado
     let color = new THREE.Color(
         0.5 + Math.random()*0.5,
         0.5,
         1
     );
 
-    colors.push(color.r, color.g, color.b);
+    colors.push(color.r,color.g,color.b);
 }
 
 const geo = new THREE.BufferGeometry();
 geo.setAttribute("position", new THREE.Float32BufferAttribute(positions,3));
 geo.setAttribute("color", new THREE.Float32BufferAttribute(colors,3));
 
-const mat = new THREE.PointsMaterial({
-    size: 0.25,
-    vertexColors: true
-});
+const points = new THREE.Points(
+    geo,
+    new THREE.PointsMaterial({size:0.25,vertexColors:true})
+);
 
-const points = new THREE.Points(geo, mat);
 galaxy.add(points);
 
-// ================= FORMACION =================
-let startTime = Date.now();
-let forming = true;
-
 // ================= FRASES =================
-let frases = [
-"ᴍᴇ ɢᴜsᴛᴀʀɪ́ᴀ ᴄᴏɴᴏᴄᴇʀᴛᴇ ✨","ᴍɪ ᴍᴏᴛɪᴠᴏ ᴇʀᴇs ᴛᴜ́ 💙","ʜᴏʟᴀ, ᴜɴɪᴠᴇʀsᴏ 🌌",
-"ᴍɪ sᴜᴇʀᴛᴇ ғᴜᴇ ᴄᴏɴᴏᴄᴇʀᴛᴇ ✨","ɴᴏ ᴘᴇʀᴅᴀᴍᴏs ʟᴀ ᴏᴘᴏʀᴛᴜɴɪᴅᴀᴅ 💫",
-"ɴᴏ ᴛᴇ sᴀᴄᴏ ᴅᴇ ᴍɪ ᴍᴇɴᴛᴇ 🌙","ᴅᴇᴊᴇᴍᴏs ᴇʟ ᴍɪᴇᴅᴏ ✨","¿ᴄʜᴀʀʟᴀ ʏ ᴜɴ ʜᴇʟᴀᴅᴏ? 🍦",
-"ᴇsᴀ sᴏɴʀɪsᴀ ᴛᴜʏᴀ 😊","ᴍɪ ᴅᴇʙɪʟɪᴅᴀᴅ 💙",
-
-"ɪʟᴜᴍɪɴᴀs ᴍɪ ᴠɪᴅᴀ ✨","ʟᴀ ᴇsᴛʀᴇʟʟᴀ ǫᴜᴇ ᴍᴀ́s ʙʀɪʟʟᴀ ᴇʀᴇs ᴛᴜ́ 🌟",
-"ᴇɴᴛʀᴇ ᴛᴀɴᴛᴀs ᴇsᴛʀᴇʟʟᴀs, ᴛᴜ́ 💫","ǫᴜɪᴇʀᴏ sᴇʀ ᴘᴀʀᴛᴇ ᴅᴇ ᴛᴜ ᴜɴɪᴠᴇʀsᴏ 🌌",
-"ɢʀᴀᴠᴇᴅᴀᴅ ᴛᴜʏᴀ 🪐","ᴘᴏʟᴠᴏ ᴅᴇ ᴇsᴛʀᴇʟʟᴀs ✨","ʟᴜᴢ sᴜᴀᴠᴇ 🌙",
-"¿ʏ sɪ ᴅᴇsᴄᴜʙʀɪᴍᴏs ᴜɴ ᴍᴜɴᴅᴏ? 🌍","ᴘᴇʀғᴇᴄᴛᴀ ᴄᴏᴍᴏ ᴜɴ ᴇᴄʟɪᴘsᴇ 🌘","ɴᴏᴄʜᴇ ᴄᴏɴ ᴛᴜ ɴᴏᴍʙʀᴇ 🌌"
-];
+let frases = ["Hola universo 🌌","Eres mi motivo 💙","Me gustas ✨","Tu sonrisa 😊"];
 
 let textSprites = [];
 
@@ -163,12 +108,10 @@ function createText(text, angle, radius){
     ctx.fillText(text, 20, 64);
 
     const texture = new THREE.CanvasTexture(canvas);
-    const material = new THREE.SpriteMaterial({
-        map: texture,
-        transparent: true
-    });
 
-    const sprite = new THREE.Sprite(material);
+    const sprite = new THREE.Sprite(
+        new THREE.SpriteMaterial({map:texture,transparent:true})
+    );
 
     sprite.position.set(
         Math.cos(angle)*radius,
@@ -177,117 +120,68 @@ function createText(text, angle, radius){
     );
 
     sprite.scale.set(10,3,1);
-    sprite.material.opacity = 0;
-
     galaxy.add(sprite);
+
     textSprites.push(sprite);
-
-    let op = 0;
-    let fade = setInterval(()=>{
-        op += 0.05;
-        sprite.material.opacity = op;
-        if(op>=1) clearInterval(fade);
-    },50);
 }
 
-// aparición progresiva
-let fi = 0;
-setInterval(()=>{
-    if(!forming && fi < frases.length){
-        createText(frases[fi], fi*0.4, 10 + Math.random()*10);
-        fi++;
+// crear todas
+frases.forEach((f,i)=>{
+    createText(f, i*0.6, 10 + Math.random()*10);
+});
+
+// ================= INTERACCION =================
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+window.addEventListener("click", e=>{
+
+    mouse.x = (e.clientX / window.innerWidth)*2 - 1;
+    mouse.y = -(e.clientY / window.innerHeight)*2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+
+    const intersects = raycaster.intersectObjects(textSprites);
+
+    if(intersects.length > 0){
+
+        textSprites.forEach(s=>{
+            s.scale.set(10,3,1);
+            s.material.opacity = 0.3;
+        });
+
+        let selected = intersects[0].object;
+
+        selected.scale.set(16,5,1);
+        selected.material.opacity = 1;
     }
-},700);
-
-// ================= SHOOTING STARS =================
-let shooting = [];
-
-function createShooting(){
-    if(shooting.length >= 3) return;
-
-    let geo = new THREE.BufferGeometry();
-    geo.setAttribute("position", new THREE.Float32BufferAttribute([0,0,0],3));
-
-    let mat = new THREE.PointsMaterial({color:0xffffff,size:1});
-
-    let s = new THREE.Points(geo,mat);
-
-    s.position.set(
-        (Math.random()-0.5)*100,
-        (Math.random()-0.5)*100,
-        (Math.random()-0.5)*100
-    );
-
-    s.vel = new THREE.Vector3(
-        (Math.random()-0.5)*3,
-        (Math.random()-0.5)*3,
-        (Math.random()-0.5)*3
-    );
-
-    scene.add(s);
-    shooting.push(s);
-
-    setTimeout(()=>{
-        scene.remove(s);
-        shooting = shooting.filter(x=>x!==s);
-    },1200);
-}
+});
 
 // ================= ANIMATE =================
 function animate(){
     requestAnimationFrame(animate);
 
-    let elapsed = (Date.now() - startTime)/1000;
-
-    // FORMACION
-    if(forming){
-        let progress = Math.min(elapsed/6,1);
-        galaxy.scale.set(progress,progress,progress);
-        if(progress>=1) forming = false;
-    }
-
-    // movimiento
-    let speed = 0.8;
+    // direccion camara
+    camera.rotation.order = "YXZ";
+    camera.rotation.y = yaw;
+    camera.rotation.x = pitch;
 
     let dir = new THREE.Vector3();
     camera.getWorldDirection(dir);
 
-    if(keys["w"]) camera.position.add(dir.clone().multiplyScalar(speed));
-    if(keys["s"]) camera.position.add(dir.clone().multiplyScalar(-speed));
+    if(keys["w"]) camera.position.add(dir.clone().multiplyScalar(0.8));
+    if(keys["s"]) camera.position.add(dir.clone().multiplyScalar(-0.8));
 
     let right = new THREE.Vector3().crossVectors(camera.up, dir).normalize();
 
-    if(keys["a"]) camera.position.add(right.clone().multiplyScalar(speed));
-    if(keys["d"]) camera.position.add(right.clone().multiplyScalar(-speed));
+    if(keys["a"]) camera.position.add(right.clone().multiplyScalar(0.8));
+    if(keys["d"]) camera.position.add(right.clone().multiplyScalar(-0.8));
 
-    if(keys["q"]) camera.position.y += speed;
-    if(keys["e"]) camera.position.y -= speed;
-
-    camera.lookAt(0,0,0);
-
-    // rotaciones
-    galaxy.rotation.y += 0.0025;
+    galaxy.rotation.y += 0.002;
     stars.rotation.y += 0.0003;
-
-    // shooting stars
-    if(Math.random()<0.03) createShooting();
-
-    shooting.forEach(s=>{
-        s.position.add(s.vel.clone().multiplyScalar(2.5));
-    });
 
     renderer.render(scene,camera);
 }
 
 animate();
-
-// resize
-window.addEventListener("resize",()=>{
-    camera.aspect = innerWidth/window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(innerWidth,window.innerHeight);
-});
 </script>
-
-</body>
-</html>
