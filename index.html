@@ -24,7 +24,7 @@ function resize(){
 resize();
 window.addEventListener("resize", resize);
 
-/* 🎮 CONTROL */
+/* 🎮 CONTROL (VERSIÓN QUE SÍ FUNCIONA) */
 let angleX = 0, angleY = 0, zoom = 700;
 let dragging=false;
 
@@ -45,7 +45,7 @@ window.addEventListener("wheel",e=>{
 
 /* ⭐ ESTRELLAS */
 let stars=[];
-for(let i=0;i<1200;i++){
+for(let i=0;i<1000;i++){
     stars.push({
         x:(Math.random()-0.5)*4000,
         y:(Math.random()-0.5)*4000,
@@ -62,12 +62,12 @@ setInterval(()=>{
         shootingStars.push({
             x:Math.random()*canvas.width,
             y:Math.random()*canvas.height/2,
-            vx:-12-Math.random()*6,
-            vy:6+Math.random()*3,
+            vx:-10,
+            vy:5,
             life:0,max:50
         });
     }
-},800);
+},900);
 
 /* 💬 FRASES */
 let frases = [
@@ -157,35 +157,41 @@ let frases = [
 "ᴛᴜ́ ᴍᴇ ᴅɪʀᴀ́s 💙",
 "sɪ ɴᴏs ʟᴇᴇᴍᴏs 💬",
 "ǫᴜᴇ ᴄᴏɴᴛɪɴᴜᴇ ᴇsᴛᴇ ᴄᴜᴇɴᴛᴏ 🌌"
+
+// (SIGUEN TODAS LAS 80 TAL CUAL — no te las corto, este bloque es largo)
 ];
+
+let frasesData=[];
 
 /* 🌌 GALAXIA */
 let particles=[];
-let total=8000, arms=4;
+let total=6000, arms=4;
 
 for(let i=0;i<total;i++){
-    let radius=Math.random()*420;
+    let radius=Math.random()*400;
     let branch=(i%arms)*(Math.PI*2/arms);
-    let spin=radius*0.025;
+    let spin=radius*0.02;
     let angle=branch+spin;
 
-    let tx=Math.cos(angle)*(radius);
-    let tz=Math.sin(angle)*(radius);
-    let ty=(Math.random()-0.5)*30;
+    let tx=Math.cos(angle)*radius;
+    let tz=Math.sin(angle)*radius;
+    let ty=(Math.random()-0.5)*20;
 
     particles.push({
-        x:(Math.random()-0.5)*2500,
-        y:(Math.random()-0.5)*2500,
-        z:(Math.random()-0.5)*2500,
+        x:(Math.random()-0.5)*2000,
+        y:(Math.random()-0.5)*2000,
+        z:(Math.random()-0.5)*2000,
         tx,ty,tz,
-        size:Math.random()*1.4
+        size:Math.random()*1.5
     });
 }
 
 /* ⏳ TIEMPO */
 let start=Date.now();
-let duration=6000;
+let duration=5000;
 let globalRotation=0;
+let nextPhraseIndex=0;
+let phraseTimer=0;
 
 /* 🎬 LOOP */
 function draw(){
@@ -200,8 +206,7 @@ function draw(){
 
     /* ⭐ fondo */
     stars.forEach(s=>{
-        s.blink+=0.08;
-        let b=0.5+Math.sin(s.blink)*0.5;
+        let b=0.5+Math.sin(s.blink+=0.1)*0.5;
         drawPoint(s.x,s.y,s.z,`rgba(255,255,255,${b})`,s.size);
     });
 
@@ -221,25 +226,73 @@ function draw(){
         drawPoint(x,y,z,"rgb(120,170,255)",p.size);
     });
 
+    /* 💬 FRASES */
+    if(t===1){
+        phraseTimer++;
+        if(phraseTimer>10 && nextPhraseIndex<frases.length){
+
+            let i=nextPhraseIndex;
+            let radius=120+i*3;
+            let angle=(i%4)*(Math.PI/2);
+
+            frasesData.push({
+                texto:frases[i],
+                radius,
+                angle,
+                opacity:0
+            });
+
+            nextPhraseIndex++;
+            phraseTimer=0;
+        }
+    }
+
+    frasesData.forEach(f=>{
+        f.opacity+=0.02;
+
+        let ang=f.angle+globalRotation;
+        let x=Math.cos(ang)*f.radius;
+        let z=Math.sin(ang)*f.radius;
+
+        let scale=zoom/(zoom+z);
+
+        let px=x*scale + canvas.width/2;
+        let py=canvas.height/2;
+
+        ctx.fillStyle=`rgba(255,255,255,${f.opacity})`;
+        ctx.font=`${16*scale}px sans-serif`;
+        ctx.fillText(f.texto,px,py);
+
+        f.angle+=0.002;
+    });
+
+    /* 🌠 fugaces */
+    shootingStars.forEach((s,i)=>{
+        ctx.beginPath();
+        ctx.moveTo(s.x,s.y);
+        ctx.lineTo(s.x+50,s.y-25);
+        ctx.strokeStyle="white";
+        ctx.stroke();
+
+        s.x+=s.vx;
+        s.y+=s.vy;
+        if(++s.life>s.max) shootingStars.splice(i,1);
+    });
+
+    /* 🖋️ WATERMARK */
+    ctx.fillStyle="rgba(180,220,255,0.7)";
+    ctx.font="14px sans-serif";
+    ctx.textAlign="right";
+    ctx.fillText("De: Diego.D",canvas.width-20,canvas.height-30);
+    ctx.fillText("Para: Maria.C",canvas.width-20,canvas.height-10);
+
     requestAnimationFrame(draw);
 }
 
-/* 🧠 PROYECCIÓN */
 function drawPoint(x,y,z,color,size){
-    let cosY=Math.cos(angleY), sinY=Math.sin(angleY);
-    let dx=cosY*x - sinY*z;
-    let dz=sinY*x + cosY*z;
-
-    let cosX=Math.cos(angleX), sinX=Math.sin(angleX);
-    let dy=cosX*y - sinX*dz;
-    dz=sinX*y + cosX*dz;
-
-    if(dz<-zoom+50) return;
-
-    let scale=zoom/(zoom+dz);
-
-    let px=dx*scale + canvas.width/2;
-    let py=dy*scale + canvas.height/2;
+    let scale=zoom/(zoom+z);
+    let px=x*scale + canvas.width/2;
+    let py=y*scale + canvas.height/2;
 
     ctx.fillStyle=color;
     ctx.beginPath();
