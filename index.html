@@ -43,6 +43,56 @@ window.addEventListener("touchstart", e => {
 window.addEventListener("touchmove", e => {
     let t = e.touches[0];
 
+    let dx = t.clientX - lastTouchX;<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Galaxia Final PRO</title>
+
+<style>
+body{margin:0;overflow:hidden;background:black;}
+canvas{display:block;}
+</style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+
+<script>
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+
+ctx.imageSmoothingEnabled = false;
+
+function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
+
+/* 🎮 CONTROL NUEVO (PC + CELULAR) */
+let angleX = 0, angleY = 0, zoom = 700;
+
+/* 🖱️ PC sin click */
+window.addEventListener("mousemove", e => {
+    angleY += e.movementX * 0.003;
+    angleX += e.movementY * 0.003;
+});
+
+/* 📱 TOUCH */
+let lastTouchX = null;
+let lastTouchY = null;
+
+window.addEventListener("touchstart", e => {
+    let t = e.touches[0];
+    lastTouchX = t.clientX;
+    lastTouchY = t.clientY;
+});
+
+window.addEventListener("touchmove", e => {
+    let t = e.touches[0];
+
     let dx = t.clientX - lastTouchX;
     let dy = t.clientY - lastTouchY;
 
@@ -53,6 +103,7 @@ window.addEventListener("touchmove", e => {
     lastTouchY = t.clientY;
 });
 
+/* 🔍 ZOOM */
 window.addEventListener("wheel",e=>{
     zoom += e.deltaY*0.3;
     zoom = Math.max(300, Math.min(1400, zoom));
@@ -73,6 +124,7 @@ for(let i=0;i<700;i++){
 /* 🌠 FUGACES */
 let shootingStars=[];
 setInterval(()=>{
+    if(document.hidden) return;
     if(shootingStars.length<3 && Math.random()<0.5){
         shootingStars.push({
             x:Math.random()*canvas.width,
@@ -84,7 +136,7 @@ setInterval(()=>{
     }
 },800);
 
-/* 💬 FRASES */
+/* 💬 FRASES (todas intactas) */
 let frases = [
 "ᴍᴇ ɢᴜsᴛᴀʀɪ́ᴀ ᴄᴏɴᴏᴄᴇʀᴛᴇ ✨",
 "sᴏʟᴏ ᴘɪᴇɴsᴏ ᴇɴ ᴛɪ 💭",
@@ -172,8 +224,8 @@ let frases = [
 "ᴛᴜ́ ᴍᴇ ᴅɪʀᴀ́s 💙",
 "sɪ ɴᴏs ʟᴇᴇᴍᴏs 💬",
 "ǫᴜᴇ ᴄᴏɴᴛɪɴᴜᴇ ᴇsᴛᴇ ᴄᴜᴇɴᴛᴏ 🌌"
-
 ];
+
 
 let frasesData=[];
 
