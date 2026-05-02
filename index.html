@@ -24,18 +24,33 @@ function resize(){
 resize();
 window.addEventListener("resize", resize);
 
-/* 🎮 CONTROL */
-let angleX = 0, angleY = 0, zoom = 700;
-let dragging=false;
+/* 🖱️ PC sin click */
+window.addEventListener("mousemove", e => {
+    angleY += e.movementX * 0.003;
+    angleX += e.movementY * 0.003;
+});
 
-window.addEventListener("mousedown",()=>dragging=true);
-window.addEventListener("mouseup",()=>dragging=false);
+/* 📱 CELULAR TOUCH */
+let lastTouchX = null;
+let lastTouchY = null;
 
-window.addEventListener("mousemove",e=>{
-    if(dragging){
-        angleY += e.movementX*0.004;
-        angleX += e.movementY*0.004;
-    }
+window.addEventListener("touchstart", e => {
+    let t = e.touches[0];
+    lastTouchX = t.clientX;
+    lastTouchY = t.clientY;
+});
+
+window.addEventListener("touchmove", e => {
+    let t = e.touches[0];
+
+    let dx = t.clientX - lastTouchX;
+    let dy = t.clientY - lastTouchY;
+
+    angleY += dx * 0.004;
+    angleX += dy * 0.004;
+
+    lastTouchX = t.clientX;
+    lastTouchY = t.clientY;
 });
 
 window.addEventListener("wheel",e=>{
