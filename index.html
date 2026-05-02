@@ -2,283 +2,349 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Galaxia</title>
+<title>Galaxia Final PRO</title>
 
 <style>
-body { margin:0; overflow:hidden; background:black; }
-
-#watermark{
- position:fixed;
- bottom:10px;
- right:15px;
- color:white;
- opacity:0.7;
- text-shadow:0 0 10px white;
- font-size:14px;
-}
+body{margin:0;overflow:hidden;background:black;}
+canvas{display:block;}
 </style>
 </head>
-
 <body>
 
-<div id="watermark">
-De: Diego.D<br>Para: Maria.C
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+<canvas id="c"></canvas>
 
 <script>
-// ===== ESCENA =====
-const scene = new THREE.Scene();
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
 
-const camera = new THREE.PerspectiveCamera(75,innerWidth/innerHeight,0.1,1000);
-camera.position.set(0,5,40);
+function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
 
-const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(innerWidth,innerHeight);
-document.body.appendChild(renderer.domElement);
+/* 🎮 CONTROL */
+let angleX = 0, angleY = 0, zoom = 700;
+let dragging=false;
 
-// ===== CONTROLES =====
-let keys = {};
-document.addEventListener("keydown",e=>keys[e.key.toLowerCase()]=true);
-document.addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
+window.addEventListener("mousedown",()=>dragging=true);
+window.addEventListener("mouseup",()=>dragging=false);
 
-let yaw = 0;
-let pitch = 0;
-
-document.addEventListener("mousemove",e=>{
- yaw -= e.movementX * 0.002;
- pitch -= e.movementY * 0.002;
- pitch = Math.max(-Math.PI/2, Math.min(Math.PI/2, pitch));
+window.addEventListener("mousemove",e=>{
+    if(dragging){
+        angleY += e.movementX*0.004;
+        angleX += e.movementY*0.004;
+    }
 });
 
-// ===== ESTRELLAS =====
-const starGeo = new THREE.BufferGeometry();
-let starPos=[];
+window.addEventListener("wheel",e=>{
+    zoom += e.deltaY*0.3;
+    zoom = Math.max(300, Math.min(1400, zoom));
+});
 
-for(let i=0;i<5000;i++){
- starPos.push(
-  (Math.random()-0.5)*300,
-  (Math.random()-0.5)*300,
-  (Math.random()-0.5)*300
- );
+/* ⭐ ESTRELLAS */
+let stars=[];
+for(let i=0;i<1200;i++){
+    stars.push({
+        x:(Math.random()-0.5)*4000,
+        y:(Math.random()-0.5)*4000,
+        z:(Math.random()-0.5)*4000,
+        size:Math.random()*2,
+        blink:Math.random()*100
+    });
 }
 
-starGeo.setAttribute("position",new THREE.Float32BufferAttribute(starPos,3));
+/* 🌠 FUGACES */
+let shootingStars=[];
+setInterval(()=>{
+    if(shootingStars.length<3 && Math.random()<0.5){
+        shootingStars.push({
+            x:Math.random()*canvas.width,
+            y:Math.random()*canvas.height/2,
+            vx:-12-Math.random()*6,
+            vy:6+Math.random()*3,
+            life:0,max:50
+        });
+    }
+},800);
 
-const starMat=new THREE.PointsMaterial({
- color:0xffffff,
- size:0.6
-});
-
-const stars=new THREE.Points(starGeo,starMat);
-scene.add(stars);
-
-// ===== GALAXIA (BRAZOS ANCHOS) =====
-const galaxy = new THREE.Group();
-scene.add(galaxy);
-
-const COUNT = 9000;
-const geo = new THREE.BufferGeometry();
-
-let pos=[];
-let col=[];
-
-for(let i=0;i<COUNT;i++){
-
- let r = Math.random()*20;
- let spin = r * 1.5;
-
- // brazos más abiertos
- let spread = 3;
-
- let x = Math.cos(spin)*r + (Math.random()-0.5)*spread;
- let z = Math.sin(spin)*r + (Math.random()-0.5)*spread;
- let y = (Math.random()-0.5)*3;
-
- pos.push(x,y,z);
-
- let color = new THREE.Color(
-  0.6,
-  0.6,
-  1
- );
-
- col.push(color.r,color.g,color.b);
-}
-
-geo.setAttribute("position",new THREE.Float32BufferAttribute(pos,3));
-geo.setAttribute("color",new THREE.Float32BufferAttribute(col,3));
-
-const mat=new THREE.PointsMaterial({
- size:0.3,
- vertexColors:true
-});
-
-const points=new THREE.Points(geo,mat);
-galaxy.add(points);
-
-// ===== FORMACION =====
-let start=Date.now();
-let forming=true;
-
-// ===== FRASES (PEGA AQUÍ TUS 80) =====
+/* 💬 FRASES */
 let frases = [
-"ᴍᴇ ɢᴜsᴛᴀʀɪ́ᴀ ᴄᴏɴᴏᴄᴇʀᴛᴇ ✨",
-"ʜᴏʟᴀ, ᴜɴɪᴠᴇʀsᴏ 🌌",
-"ᴇsᴀ sᴏɴʀɪsᴀ ᴛᴜʏᴀ 😊"
+"ᴍᴇ ɢᴜsᴛᴀʀɪ́ᴀ ᴄᴏɴᴏᴄᴇʀᴛᴇ",
+"ᴍɪ ᴍᴏᴛɪᴠᴏ ᴇʀᴇs ᴛᴜ́",
+"ʜᴏʟᴀ, ᴜɴɪᴠᴇʀsᴏ",
+"ᴍɪ sᴜᴇʀᴛᴇ ғᴜᴇ ᴄᴏɴᴏᴄᴇʀᴛᴇ",
+"ɴᴏ ᴘᴇʀᴅᴀᴍᴏs ʟᴀ ᴏᴘᴏʀᴛᴜɴɪᴅᴀᴅ",
+"ɴᴏ ᴛᴇ sᴀᴄᴏ ᴅᴇ ᴍɪ ᴍᴇɴᴛᴇ",
+"ᴅᴇᴊᴇᴍᴏs ᴇʟ ᴍɪᴇᴅᴏ",
+"¿ᴄʜᴀʀʟᴀ ʏ ᴜɴ ʜᴇʟᴀᴅᴏ?",
+"ᴇsᴀ sᴏɴʀɪsᴀ ᴛᴜʏᴀ",
+"ᴍɪ ᴅᴇʙɪʟɪᴅᴀᴅ",
+
+"ɪʟᴜᴍɪɴᴀs ᴍɪ ᴠɪᴅᴀ",
+"ʟᴀ ᴇsᴛʀᴇʟʟᴀ ǫᴜᴇ ᴍᴀ́s ʙʀɪʟʟᴀ ᴇʀᴇs ᴛᴜ́",
+"ᴇɴᴛʀᴇ ᴛᴀɴᴛᴀs ᴇsᴛʀᴇʟʟᴀs, ᴛᴜ́",
+"ǫᴜɪᴇʀᴏ sᴇʀ ᴘᴀʀᴛᴇ ᴅᴇ ᴛᴜ ᴜɴɪᴠᴇʀsᴏ",
+"ɢʀᴀᴠᴇᴅᴀᴅ ᴛᴜʏᴀ",
+"ᴘᴏʟᴠᴏ ᴅᴇ ᴇsᴛʀᴇʟʟᴀs",
+"ʟᴜᴢ sᴜᴀᴠᴇ",
+"¿ʏ sɪ ᴅᴇsᴄᴜʙʀɪᴍᴏs ᴜɴ ᴍᴜɴᴅᴏ?",
+"ᴘᴇʀғᴇᴄᴛᴀ ᴄᴏᴍᴏ ᴜɴ ᴇᴄʟɪᴘsᴇ",
+"ɴᴏᴄʜᴇ ᴄᴏɴ ᴛᴜ ɴᴏᴍʙʀᴇ",
+
+"ᴛɪᴇɴᴇs ᴇsᴇ ᴀʟɢᴏ ǫᴜᴇ ᴍᴇ ᴇɴᴄᴀɴᴛᴀ",
+"ǫᴜᴇ́ ʙᴏɴɪᴛᴏ ᴄʀᴜᴢᴀʀɴᴏs",
+"ᴜɴᴀ ᴘᴇǫᴜᴇɴ̃ᴀ ᴄᴏɪɴᴄɪᴅᴇɴᴄɪᴀ",
+"ᴍᴇ ʜᴀᴄᴇs sᴇʀ ᴍᴇᴊᴏʀ",
+"ᴛɪᴇɴᴇs ᴀʟɢᴏ ᴇsᴘᴇᴄɪᴀʟ",
+"ᴄᴏɴᴛɪɢᴏ ᴛᴏᴅᴏ ᴇs ᴍᴇᴊᴏʀ",
+"ᴄᴜʀɪᴏsɪᴅᴀᴅ ᴅᴇ ᴛɪ",
+"ʙᴜᴇɴ ʜᴀʟʟᴀᴢɢᴏ",
+"ᴍᴇ ᴀɢʀᴀᴅᴀs",
+"ᴄᴀsᴜᴀʟɪᴅᴀᴅ ʟɪɴᴅᴀ",
+
+"¿ʏ sɪ ʜᴀʙʟᴀᴍᴏs?",
+"¿ᴜɴ ʀᴀᴛᴏ ᴍᴀ́s?",
+"¿ᴛᴇ ᴅᴇᴊᴀs ᴄᴏɴᴏᴄᴇʀ?",
+"¿ǫᴜᴇ́ ᴛᴀʟ ᴜɴ ʜᴏʟᴀ?",
+"¿ᴄᴏɪɴᴄɪᴅɪᴍᴏs ʟᴜᴇɢᴏ?",
+"¿ᴛɪᴇɴᴇs 5 ᴍɪɴᴜᴛᴏs?",
+"¿ᴛᴇ ᴄᴜᴇɴᴛᴏ ᴀʟɢᴏ?",
+"¿ᴄʜᴀʀʟᴀ ʏ ᴜɴ ʜᴇʟᴀᴅᴏ?",
+"¿ᴍᴇ ᴅᴀs ᴄʜᴀɴᴄᴇ?",
+"¿ʏ sɪ sɪ́?",
+
+"sɪʟᴇɴᴄɪᴏ ʙᴏɴɪᴛᴏ ᴄᴏɴᴛɪɢᴏ",
+"ᴅᴇᴛɪᴇɴᴇs ᴇʟ ᴛɪᴇᴍᴘᴏ",
+"sᴜsᴜʀʀᴏ ᴅᴇ ǫᴜɪᴢᴀ́",
+"sᴏʟᴏ ɴᴏsᴏᴛʀᴏs",
+"ɪᴅᴇᴀ ᴅᴇ ɴᴏsᴏᴛʀᴏs",
+"ᴛɪᴇᴍᴘᴏ ᴅᴇᴛᴇɴɪᴅᴏ",
+"ʟᴀ ᴍɪʀᴀᴅᴀ ǫᴜᴇ ᴍᴇ ᴇɴᴠᴜᴇʟᴠᴇ",
+"sᴏʟᴏ ǫᴜɪᴇʀᴏ ᴜɴᴀ sᴏɴʀɪsᴀ",
+"ᴜɴᴀ ʜɪsᴛᴏʀɪᴀ ᴘᴏʀ ᴇsᴄʀɪʙɪʀ",
+"ᴘᴏsɪʙɪʟɪᴅᴀᴅ ᴀʙɪᴇʀᴛᴀ",
+
+"ᴇsᴛᴏ ᴇʀᴀ ᴘᴀʀᴀ ᴛɪ",
+"ᴜɴ ᴅᴇᴛᴀʟʟᴇ ᴘᴜᴇᴅᴇ ᴍᴇᴊᴏʀᴀʀ ᴛᴜ ᴅɪ́ᴀ",
+"ᴏᴊᴀʟᴀ́ ᴛᴇ ɢᴜsᴛᴀʀᴀ",
+"ᴘᴇɴsᴀɴᴅᴏ ᴇɴ ᴛɪ",
+"sᴏʟᴏ ǫᴜᴇʀɪ́ᴀ ᴀʟᴇɢʀᴀʀᴛᴇ",
+"ᴍɪ ᴍᴏᴛɪᴠᴏ ᴇʀᴇs ᴛᴜ́",
+"sᴏɴʀɪsᴀ ʙᴜsᴄᴀᴅᴀ",
+"ʜᴇᴄʜᴏ ᴄᴏɴ ɢᴀɴᴀs",
+"sᴏʟᴏ ᴘᴀʀᴀ ᴛɪ",
+"ᴇsᴘᴇʀᴏ ʟᴀ ᴏᴘᴏʀᴛᴜɴɪᴅᴀᴅ",
+
+"ᴄʜᴀʀʟᴀ sɪɴ ʀᴇʟᴏᴊ",
+"ʜᴇʟᴀᴅᴏ ʏ ɴᴀᴅᴀ ᴍᴀ́s",
+"ᴄᴀᴍɪɴᴀʀ sɪɴ ʀᴜᴍʙᴏ",
+"ᴘᴀʟᴀʙʀᴀs sᴜᴇʟᴛᴀs",
+"ᴛᴀʀᴅᴇ ᴛʀᴀɴǫᴜɪʟᴀ",
+"ɢᴀɴᴀs ᴅᴇ ᴛᴏᴅᴏ ᴘᴇʀᴏ sᴏʟᴏ ᴄᴏɴᴛɪɢᴏ",
+"sᴏʟᴏ ᴄᴏᴍᴘᴀʀᴛɪʀ ᴛɪᴇᴍᴘᴏ",
+"sɪɴ ᴘʟᴀɴᴇs",
+"sᴏʟᴏ ᴇsᴛᴀʀ",
+"sɪɴ ᴘʀᴇᴏᴄᴜᴘᴀᴄɪᴏɴᴇs",
+
+"ǫᴜᴇ́ᴅᴀᴛᴇ ᴜɴ ʀᴀᴛᴏ",
+"ᴍᴇ ɢᴜsᴛᴀ ᴇsᴛᴏ",
+"ᴀǫᴜɪ́ ᴇsᴛᴏʏ",
+"ᴀ ᴜɴᴀ ᴘᴀʟᴀʙʀᴀ ᴅᴇ ᴅɪsᴛᴀɴᴄɪᴀ",
+"ᴄᴜᴀɴᴅᴏ ǫᴜɪᴇʀᴀs",
+"sɪɴ ᴀᴘᴜʀᴏs",
+"ʏᴏ ᴛᴇ ʜᴀɢᴏ sᴏɴʀᴇɪʀ",
+"ᴛᴜ́ ᴍᴇ ᴅɪʀᴀ́s",
+"sɪ ɴᴏs ʟᴇᴇᴍᴏs",
+"ǫᴜᴇ ᴄᴏɴᴛɪɴᴜᴇ ᴇsᴛᴇ ᴄᴜᴇɴᴛᴏ"
+
 ];
 
-// ===== TEXTO SIN FONDO =====
-let textSprites=[];
+let frasesData=[];
 
-function createText(text, angle, radius){
+/* 🌌 GALAXIA */
+let particles=[];
+let total=8000, arms=4;
 
- const canvas = document.createElement("canvas");
- const ctx = canvas.getContext("2d");
+for(let i=0;i<total;i++){
+    let radius=Math.random()*420;
+    let branch=(i%arms)*(Math.PI*2/arms);
+    let spin=radius*0.025;
+    let angle=branch+spin;
 
- canvas.width = 512;
- canvas.height = 128;
+    let width=40;
+    let offset=(Math.random()-0.5)*width;
+    let angleNoise=(Math.random()-0.5)*0.15;
 
- ctx.clearRect(0,0,512,128);
+    let tx=Math.cos(angle+angleNoise)*(radius+offset);
+    let tz=Math.sin(angle+angleNoise)*(radius+offset);
 
- ctx.font = "bold 32px Arial";
- ctx.fillStyle = "white";
+    let thickness=30*(1-radius/420);
+    let ty=(Math.random()-0.5)*thickness;
 
- ctx.shadowColor = "white";
- ctx.shadowBlur = 15;
-
- ctx.fillText(text,20,70);
-
- const texture = new THREE.CanvasTexture(canvas);
-
- const material = new THREE.SpriteMaterial({
-  map: texture,
-  transparent: true,
-  depthTest: false, // 🔥 SIEMPRE visible
-  depthWrite: false
- });
-
- const sprite = new THREE.Sprite(material);
-
- sprite.position.set(
-  Math.cos(angle)*radius,
-  0,
-  Math.sin(angle)*radius
- );
-
- sprite.scale.set(8,2.5,1);
- sprite.material.opacity = 0;
-
- galaxy.add(sprite);
- textSprites.push(sprite);
-
- let op=0;
- let fade=setInterval(()=>{
-  op+=0.05;
-  sprite.material.opacity=op;
-  if(op>=1) clearInterval(fade);
- },50);
+    particles.push({
+        x:(Math.random()-0.5)*2500,
+        y:(Math.random()-0.5)*2500,
+        z:(Math.random()-0.5)*2500,
+        tx,ty,tz,
+        size:Math.random()*1.4
+    });
 }
 
-// aparición progresiva
-let fi=0;
-setInterval(()=>{
- if(!forming && fi<frases.length){
-  createText(frases[fi],fi*0.4,10+Math.random()*10);
-  fi++;
- }
-},700);
+/* ⏳ TIEMPO */
+let start=Date.now();
+let duration=6000;
+let globalRotation=0;
+let nextPhraseIndex=0;
+let phraseTimer=0;
 
-// ===== FUGACES =====
-let shooting=[];
+/* 🎬 LOOP */
+function draw(){
 
-function shoot(){
- if(shooting.length>=3) return;
+    ctx.fillStyle="black";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
 
- let geo=new THREE.BufferGeometry();
- geo.setAttribute("position",new THREE.Float32BufferAttribute([0,0,0],3));
+    let t=(Date.now()-start)/duration;
+    if(t>1) t=1;
 
- let mat=new THREE.PointsMaterial({color:0xffffff,size:1});
- let s=new THREE.Points(geo,mat);
+    globalRotation+=0.002;
 
- s.position.set(
-  (Math.random()-0.5)*100,
-  (Math.random()-0.5)*100,
-  (Math.random()-0.5)*100
- );
+    /* ⭐ fondo */
+    stars.forEach(s=>{
+        s.blink+=0.08;
+        let b=0.5+Math.sin(s.blink)*0.5;
+        drawPoint(s.x,s.y,s.z,`rgba(255,255,255,${b})`,s.size);
+    });
 
- s.vel=new THREE.Vector3(
-  (Math.random()-0.5)*3,
-  (Math.random()-0.5)*3,
-  (Math.random()-0.5)*3
- );
+    /* 🌌 galaxia */
+    particles.forEach(p=>{
+        let x=p.x+(p.tx-p.x)*t;
+        let y=p.y+(p.ty-p.y)*t;
+        let z=p.z+(p.tz-p.z)*t;
 
- scene.add(s);
- shooting.push(s);
+        if(t===1){
+            let ang=Math.atan2(z,x)+globalRotation;
+            let dist=Math.sqrt(x*x+z*z);
+            x=Math.cos(ang)*dist;
+            z=Math.sin(ang)*dist;
+        }
 
- setTimeout(()=>{
-  scene.remove(s);
-  shooting=shooting.filter(x=>x!==s);
- },1200);
+        drawPoint(x,y,z,"rgb(120,170,255)",p.size);
+    });
+
+    /* 💬 FRASES */
+    if(t===1){
+        phraseTimer++;
+        if(phraseTimer>15 && nextPhraseIndex<frases.length){
+
+            let i=nextPhraseIndex;
+            let radius=120+i*4;
+            let branch=(i%4)*(Math.PI*2/4);
+            let spin=radius*0.025;
+            let angle=branch+spin;
+
+            frasesData.push({
+                texto:frases[i],
+                radius,
+                angle,
+                opacity:0
+            });
+
+            nextPhraseIndex++;
+            phraseTimer=0;
+        }
+    }
+
+    frasesData.forEach(f=>{
+        f.opacity+=0.03;
+        if(f.opacity>1) f.opacity=1;
+
+        let ang=f.angle+globalRotation;
+        let x=Math.cos(ang)*f.radius;
+        let z=Math.sin(ang)*f.radius;
+
+        let cosY=Math.cos(angleY);
+        let sinY=Math.sin(angleY);
+        let dx=cosY*x - sinY*z;
+        let dz=sinY*x + cosY*z;
+
+        let cosX=Math.cos(angleX);
+        let sinX=Math.sin(angleX);
+        let dy=cosX*0 - sinX*dz;
+        dz=sinX*0 + cosX*dz;
+
+        if(dz<-zoom+50) return;
+
+        let scale=zoom/(zoom+dz);
+
+        let px=dx*scale + canvas.width/2;
+        let py=dy*scale + canvas.height/2;
+
+        ctx.fillStyle=`rgba(255,255,255,${f.opacity})`;
+        ctx.font=`${14*scale}px 'Segoe UI','Arial Unicode MS',sans-serif`;
+        ctx.fillText(f.texto,px,py);
+
+        f.angle+=0.002;
+    });
+
+    /* 🌠 fugaces */
+    shootingStars.forEach((s,i)=>{
+        ctx.beginPath();
+        ctx.moveTo(s.x,s.y);
+        ctx.lineTo(s.x+50,s.y-25);
+        ctx.strokeStyle="white";
+        ctx.lineWidth=2;
+        ctx.stroke();
+
+        s.x+=s.vx;
+        s.y+=s.vy;
+        s.life++;
+        if(s.life>s.max) shootingStars.splice(i,1);
+    });
+
+    /* 🖋️ MARCA DE AGUA CON GLOW */
+    ctx.save();
+
+    ctx.fillStyle = "rgba(180,220,255,0.7)";
+    ctx.font = "14px 'Segoe UI', sans-serif";
+    ctx.textAlign = "right";
+
+    ctx.shadowColor = "rgba(180,220,255,0.9)";
+    ctx.shadowBlur = 10;
+
+    ctx.fillText("De: Diego.D", canvas.width - 20, canvas.height - 30);
+    ctx.fillText("Para: Maria.C", canvas.width - 20, canvas.height - 10);
+
+    ctx.restore();
+
+    requestAnimationFrame(draw);
 }
 
-// ===== LOOP =====
-function animate(){
- requestAnimationFrame(animate);
+/* 🧠 PROYECCIÓN */
+function drawPoint(x,y,z,color,size){
+    let cosY=Math.cos(angleY), sinY=Math.sin(angleY);
+    let dx=cosY*x - sinY*z;
+    let dz=sinY*x + cosY*z;
 
- let t=(Date.now()-start)/1000;
+    let cosX=Math.cos(angleX), sinX=Math.sin(angleX);
+    let dy=cosX*y - sinX*dz;
+    dz=sinX*y + cosX*dz;
 
- if(forming){
-  let p=Math.min(t/6,1);
-  galaxy.scale.set(p,p,p);
-  if(p>=1) forming=false;
- }
+    if(dz<-zoom+50) return;
 
- // movimiento
- let speed=1.2;
+    let scale=zoom/(zoom+dz);
 
- let dir=new THREE.Vector3(
-  Math.cos(pitch)*Math.sin(yaw),
-  Math.sin(pitch),
-  Math.cos(pitch)*Math.cos(yaw)
- );
+    let px=dx*scale + canvas.width/2;
+    let py=dy*scale + canvas.height/2;
 
- let right=new THREE.Vector3(
-  Math.sin(yaw - Math.PI/2),
-  0,
-  Math.cos(yaw - Math.PI/2)
- );
-
- if(keys["w"]) camera.position.add(dir.clone().multiplyScalar(speed));
- if(keys["s"]) camera.position.add(dir.clone().multiplyScalar(-speed));
- if(keys["a"]) camera.position.add(right.clone().multiplyScalar(speed));
- if(keys["d"]) camera.position.add(right.clone().multiplyScalar(-speed));
- if(keys["q"]) camera.position.y+=speed;
- if(keys["e"]) camera.position.y-=speed;
-
- camera.lookAt(0,0,0);
-
- // rotación
- galaxy.rotation.y+=0.002;
- stars.rotation.y+=0.0003;
-
- if(Math.random()<0.03) shoot();
-
- shooting.forEach(s=>{
-  s.position.add(s.vel.clone().multiplyScalar(2.5));
- });
-
- renderer.render(scene,camera);
+    ctx.fillStyle=color;
+    ctx.beginPath();
+    ctx.arc(px,py,size*scale,0,Math.PI*2);
+    ctx.fill();
 }
 
-animate();
-
-window.addEventListener("resize",()=>{
- camera.aspect=innerWidth/innerHeight;
- camera.updateProjectionMatrix();
- renderer.setSize(innerWidth,innerHeight);
-});
+draw();
 </script>
 
 </body>
