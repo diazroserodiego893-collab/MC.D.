@@ -2,272 +2,291 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Galaxia Final PRO</title>
+<title>Galaxia</title>
 
 <style>
-body{margin:0;overflow:hidden;background:black;}
-canvas{display:block;}
+body {
+    margin: 0;
+    overflow: hidden;
+    background: black;
+    font-family: Arial, sans-serif;
+}
+
+/* Marca de agua */
+#watermark {
+    position: fixed;
+    bottom: 10px;
+    right: 15px;
+    color: rgba(255,255,255,0.7);
+    text-shadow: 0 0 10px rgba(255,255,255,0.8);
+    font-size: 14px;
+}
 </style>
 </head>
+
 <body>
 
-<canvas id="c"></canvas>
+<div id="watermark">
+De: Diego.D<br>Para: Maria.C
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 
 <script>
-const canvas = document.getElementById("c");
-const ctx = canvas.getContext("2d");
+// ================= SCENE =================
+const scene = new THREE.Scene();
 
-ctx.imageSmoothingEnabled = false;
+const camera = new THREE.PerspectiveCamera(
+    75,
+    window.innerWidth/window.innerHeight,
+    0.1,
+    1000
+);
 
-function resize(){
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-}
-resize();
-window.addEventListener("resize", resize);
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
 
-/* 🎮 CONTROL (PC + CELULAR) */
-let angleX = 0, angleY = 0, zoom = 700;
+// ================= CONTROLES =================
+let keys = {};
 
-/* 🖱️ mouse libre */
-window.addEventListener("mousemove", e => {
-    angleY += e.movementX * 0.003;
-    angleX += e.movementY * 0.003;
+document.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
+document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
+
+let yaw = 0;
+let pitch = 0;
+
+document.addEventListener("mousemove", e => {
+    yaw -= e.movementX * 0.002;
+    pitch -= e.movementY * 0.002;
+    pitch = Math.max(-Math.PI/2, Math.min(Math.PI/2, pitch));
 });
 
-/* 📱 touch */
-let lastTouchX=null,lastTouchY=null;
+camera.position.set(0,5,40);
 
-window.addEventListener("touchstart", e=>{
-    let t=e.touches[0];
-    lastTouchX=t.clientX;
-    lastTouchY=t.clientY;
-});
+// ================= ESTRELLAS FONDO =================
+const starGeo = new THREE.BufferGeometry();
+const starCount = 5000;
+let starPositions = [];
 
-window.addEventListener("touchmove", e=>{
-    let t=e.touches[0];
-    let dx=t.clientX-lastTouchX;
-    let dy=t.clientY-lastTouchY;
-
-    angleY+=dx*0.004;
-    angleX+=dy*0.004;
-
-    lastTouchX=t.clientX;
-    lastTouchY=t.clientY;
-});
-
-/* 🔍 zoom */
-window.addEventListener("wheel",e=>{
-    zoom+=e.deltaY*0.3;
-    zoom=Math.max(300,Math.min(1400,zoom));
-});
-
-/* ⭐ estrellas */
-let stars=[];
-for(let i=0;i<700;i++){
-    stars.push({
-        x:(Math.random()-0.5)*4000,
-        y:(Math.random()-0.5)*4000,
-        z:(Math.random()-0.5)*4000,
-        size:Math.random()*2,
-        blink:Math.random()*100
-    });
+for(let i=0;i<starCount;i++){
+    starPositions.push(
+        (Math.random()-0.5)*300,
+        (Math.random()-0.5)*300,
+        (Math.random()-0.5)*300
+    );
 }
 
-/* 🌠 fugaces */
-let shootingStars=[];
-setInterval(()=>{
-    if(document.hidden) return;
-    if(shootingStars.length<3 && Math.random()<0.5){
-        shootingStars.push({
-            x:Math.random()*canvas.width,
-            y:Math.random()*canvas.height/2,
-            vx:-12-Math.random()*6,
-            vy:6+Math.random()*3,
-            life:0,max:50
-        });
-    }
-},800);
+starGeo.setAttribute(
+    "position",
+    new THREE.Float32BufferAttribute(starPositions,3)
+);
 
-/* 💬 FRASES */
+const starMat = new THREE.PointsMaterial({
+    color: 0xffffff,
+    size: 0.6
+});
+
+const stars = new THREE.Points(starGeo, starMat);
+scene.add(stars);
+
+// ================= GALAXIA =================
+const galaxy = new THREE.Group();
+scene.add(galaxy);
+
+const PARTICLE_COUNT = 9000;
+const positions = [];
+const colors = [];
+
+for(let i=0;i<PARTICLE_COUNT;i++){
+
+    let radius = Math.random()*20;
+    let spin = radius * 1.5;
+
+    let x = Math.cos(spin) * radius;
+    let z = Math.sin(spin) * radius;
+    let y = (Math.random()-0.5)*3;
+
+    positions.push(x,y,z);
+
+    // colores azul / morado
+    let color = new THREE.Color(
+        0.5 + Math.random()*0.5,
+        0.5,
+        1
+    );
+
+    colors.push(color.r, color.g, color.b);
+}
+
+const geo = new THREE.BufferGeometry();
+geo.setAttribute("position", new THREE.Float32BufferAttribute(positions,3));
+geo.setAttribute("color", new THREE.Float32BufferAttribute(colors,3));
+
+const mat = new THREE.PointsMaterial({
+    size: 0.25,
+    vertexColors: true
+});
+
+const points = new THREE.Points(geo, mat);
+galaxy.add(points);
+
+// ================= FORMACION =================
+let startTime = Date.now();
+let forming = true;
+
+// ================= FRASES =================
 let frases = [
-"ᴍᴇ ɢᴜsᴛᴀʀɪ́ᴀ ᴄᴏɴᴏᴄᴇʀᴛᴇ ✨",
-"sᴏʟᴏ ᴘɪᴇɴsᴏ ᴇɴ ᴛɪ 💭",
-"ᴍɪ ᴍᴏᴛɪᴠᴏ ᴇʀᴇs ᴛᴜ́ 💙",
-"ᴍɪ sᴜᴇʀᴛᴇ ғᴜᴇ ᴄᴏɴᴏᴄᴇʀᴛᴇ ✨",
-"ɴᴏ ᴘᴇʀᴅᴀᴍᴏs ʟᴀ ᴏᴘᴏʀᴛᴜɴɪᴅᴀᴅ 💫",
-"ɴᴏ ᴛᴇ sᴀᴄᴏ ᴅᴇ ᴍɪ ᴍᴇɴᴛᴇ 🌙",
-"ᴅᴇᴊᴇᴍᴏs ᴇʟ ᴍɪᴇᴅᴏ ✨",
-"¿ᴄʜᴀʀʟᴀ ʏ ᴜɴ ʜᴇʟᴀᴅᴏ? 🍦",
-"ᴇsᴀ sᴏɴʀɪsᴀ ᴛᴜʏᴀ 😊",
-"ᴍɪ ᴅᴇʙɪʟɪᴅᴀᴅ 💙",
+"ᴍᴇ ɢᴜsᴛᴀʀɪ́ᴀ ᴄᴏɴᴏᴄᴇʀᴛᴇ ✨","ᴍɪ ᴍᴏᴛɪᴠᴏ ᴇʀᴇs ᴛᴜ́ 💙","ʜᴏʟᴀ, ᴜɴɪᴠᴇʀsᴏ 🌌",
+"ᴍɪ sᴜᴇʀᴛᴇ ғᴜᴇ ᴄᴏɴᴏᴄᴇʀᴛᴇ ✨","ɴᴏ ᴘᴇʀᴅᴀᴍᴏs ʟᴀ ᴏᴘᴏʀᴛᴜɴɪᴅᴀᴅ 💫",
+"ɴᴏ ᴛᴇ sᴀᴄᴏ ᴅᴇ ᴍɪ ᴍᴇɴᴛᴇ 🌙","ᴅᴇᴊᴇᴍᴏs ᴇʟ ᴍɪᴇᴅᴏ ✨","¿ᴄʜᴀʀʟᴀ ʏ ᴜɴ ʜᴇʟᴀᴅᴏ? 🍦",
+"ᴇsᴀ sᴏɴʀɪsᴀ ᴛᴜʏᴀ 😊","ᴍɪ ᴅᴇʙɪʟɪᴅᴀᴅ 💙",
 
-"ɪʟᴜᴍɪɴᴀs ᴍɪ ᴠɪᴅᴀ ✨",
-"ʟᴀ ᴇsᴛʀᴇʟʟᴀ ǫᴜᴇ ᴍᴀ́s ʙʀɪʟʟᴀ ᴇʀᴇs ᴛᴜ́ 🌟",
-"ᴇɴᴛʀᴇ ᴛᴀɴᴛᴀs ᴇsᴛʀᴇʟʟᴀs, ᴛᴜ́ 💫",
-"ǫᴜɪᴇʀᴏ sᴇʀ ᴘᴀʀᴛᴇ ᴅᴇ ᴛᴜ ᴜɴɪᴠᴇʀsᴏ 🌌",
-"ɴᴏ sᴇ́ ǫᴜᴇ́ ᴛɪᴇɴᴇs, ᴘᴇʀᴏ ᴍᴇ ɢᴜsᴛᴀ 💙",
-"ᴛᴏᴅᴏ ᴍᴇ ʟʟᴇᴠᴀ ᴀ ᴛɪ 💫",
-"ᴛᴜ ʟᴜᴢ ᴍᴇ ᴄᴀʟᴍᴀ 🌙",
-"¿ʏ sɪ ᴅᴇsᴄᴜʙʀɪᴍᴏs ᴜɴ ᴍᴜɴᴅᴏ? 🌍",
-"ᴘᴇʀғᴇᴄᴛᴀ ᴄᴏᴍᴏ ᴜɴ ᴇᴄʟɪᴘsᴇ 🌘",
-"ᴘɪᴇɴsᴏ ᴇɴ ᴛɪ ᴀᴜɴ ᴅᴇ ɴᴏᴄʜᴇ 🌙",
-
-"ᴛɪᴇɴᴇs ᴇsᴇ ᴀʟɢᴏ ǫᴜᴇ ᴍᴇ ᴇɴᴄᴀɴᴛᴀ 💙",
-"ǫᴜᴇ́ ʙᴏɴɪᴛᴏ ᴄʀᴜᴢᴀʀɴᴏs ✨",
-"ᴜɴᴀ ᴘᴇǫᴜᴇɴ̃ᴀ ᴄᴏɪɴᴄɪᴅᴇɴᴄɪᴀ 💫",
-"ᴍᴇ ʜᴀᴄᴇs sᴇʀ ᴍᴇᴊᴏʀ 🌙",
-"ᴛɪᴇɴᴇs ᴀʟɢᴏ ǫᴜᴇ ɴᴏ ᴇxᴘʟɪᴄᴏ 💙",
-"ᴄᴏɴᴛɪɢᴏ ᴛᴏᴅᴏ ᴇs ᴍᴇᴊᴏʀ 💙",
-"ᴄᴜʀɪᴏsɪᴅᴀᴅ ᴅᴇ ᴛɪ 👀",
-"ᴇɴᴄᴏɴᴛʀᴀʀᴛᴇ ғᴜᴇ ʟᴏ ᴍᴇᴊᴏʀ 💙",
-"ᴍᴇ ᴇɴᴄᴀɴᴛᴀs 💙",
-"ǫᴜᴇ sᴜᴇʀᴛᴇ ᴄᴏɪɴᴄɪᴅɪʀ ᴄᴏɴᴛɪɢᴏ 💫",
-
-"¿ʏ sɪ ʜᴀʙʟᴀᴍᴏs? 💬",
-"¿ᴜɴ ʀᴀᴛᴏ ᴍᴀ́s? ⏳",
-"¿ᴛᴇ ᴅᴇᴊᴀs ᴄᴏɴᴏᴄᴇʀ? ✨",
-"¿ǫᴜᴇ́ ᴛᴀʟ ᴜɴ ʜᴏʟᴀ? 👋",
-"¿ᴄᴏɪɴᴄɪᴅɪᴍᴏs ʟᴜᴇɢᴏ? 💫",
-"¿ᴛɪᴇɴᴇs 5 ᴍɪɴᴜᴛᴏs? ⏱️",
-"¿ᴛᴇ ᴄᴜᴇɴᴛᴏ ᴀʟɢᴏ? 🤍",
-"¿ᴍᴇ ᴅᴀs ᴄʜᴀɴᴄᴇ? 💙",
-"¿ʏ sɪ sɪ́? ✨",
-
-"sɪʟᴇɴᴄɪᴏ ʙᴏɴɪᴛᴏ ᴄᴏɴᴛɪɢᴏ 🌙",
-"ᴅᴇᴛɪᴇɴᴇs ᴇʟ ᴛɪᴇᴍᴘᴏ ⏳",
-"ᴍᴇ ǫᴜᴇᴅᴏ ᴄᴏɴ ᴇsᴇ ǫᴜɪᴢᴀ́ ᴄᴏɴᴛɪɢᴏ 💫",
-"ᴍᴇ ɢᴜsᴛᴀ ᴄᴜᴀɴᴅᴏ sᴏᴍᴏs sᴏʟᴏ ɴᴏsᴏᴛʀᴏs 🤍",
-"ᴍᴇ ɢᴜsᴛᴀ ʟᴀ ɪᴅᴇᴀ ᴅᴇ ɴᴏsᴏᴛʀᴏs 💙",
-"ᴛɪᴇᴍᴘᴏ ᴅᴇᴛᴇɴɪᴅᴏ ⏳",
-"ʟᴀ ᴍɪʀᴀᴅᴀ ǫᴜᴇ ᴍᴇ ᴇɴᴠᴜᴇʟᴠᴇ 👀",
-"sᴏʟᴏ ǫᴜɪᴇʀᴏ ᴜɴᴀ sᴏɴʀɪsᴀ 😊",
-"ᴜɴᴀ ʜɪsᴛᴏʀɪᴀ ᴘᴏʀ ᴇsᴄʀɪʙɪʀ 📖",
-"ᴄᴏɴᴛɪɢᴏ ᴛᴏᴅᴏ ᴘᴜᴇᴅᴇ ᴘᴀsᴀʀ ✨",
-
-"ᴇsᴛᴏ ᴇʀᴀ ᴘᴀʀᴀ ᴛɪ 🎁",
-"ᴜɴ ᴅᴇᴛᴀʟʟᴇ ᴘᴜᴇᴅᴇ ᴍᴇᴊᴏʀᴀʀ ᴛᴜ ᴅɪ́ᴀ ✨",
-"ᴏᴊᴀʟᴀ́ ᴛᴇ ɢᴜsᴛᴀʀᴀ 💙",
-"ᴘᴇɴsᴀɴᴅᴏ ᴇɴ ᴛɪ 🌙",
-"sᴏʟᴏ ǫᴜᴇʀɪ́ᴀ ᴀʟᴇɢʀᴀʀᴛᴇ 😊",
-"ᴍɪ ᴍᴏᴛɪᴠᴏ ᴇʀᴇs ᴛᴜ́ 💙",
-"sᴏɴʀɪsᴀ ʙᴜsᴄᴀᴅᴀ 😊",
-"ʜᴇᴄʜᴏ ᴄᴏɴ ɢᴀɴᴀs ✨",
-"sᴏʟᴏ ᴘᴀʀᴀ ᴛɪ 💙",
-"ᴇsᴘᴇʀᴏ ʟᴀ ᴏᴘᴏʀᴛᴜɴɪᴅᴀᴅ 💫",
-
-"ᴄʜᴀʀʟᴀ sɪɴ ʀᴇʟᴏᴊ ☕",
-"ʜᴇʟᴀᴅᴏ ʏ ɴᴀᴅᴀ ᴍᴀ́s 🍦",
-"ᴄᴀᴍɪɴᴀʀ sɪɴ ʀᴜᴍʙᴏ 🚶‍♂️",
-"ᴄᴏɴᴛɪɢᴏ ᴍᴇ sᴀʟᴇɴ ʟᴀs ᴘᴀʟᴀʙʀᴀs 💬",
-"ᴜɴᴀ ᴛᴀʀᴅᴇ ᴄᴏɴᴛɪɢᴏ sᴜᴇɴᴀ ᴘᴇʀғᴇᴄᴛᴀ 🌇",
-"ɢᴀɴᴀs ᴅᴇ ᴛᴏᴅᴏ ᴘᴇʀᴏ sᴏʟᴏ ᴄᴏɴᴛɪɢᴏ 💙",
-"sᴏʟᴏ ᴄᴏᴍᴘᴀʀᴛɪʀ ᴛɪᴇᴍᴘᴏ 🤍",
-"ᴄᴏɴᴛɪɢᴏ ɴᴏ ʜᴀᴄᴇ ғᴀʟᴛᴀ ᴘʟᴀɴ 💙",
-"ᴍᴇ ɢᴜsᴛᴀ sᴏʟᴏ ᴇsᴛᴀʀ ᴄᴏɴᴛɪɢᴏ 🌙",
-"ᴄᴏɴᴛɪɢᴏ ᴛᴏᴅᴏ sᴇ sɪᴇɴᴛᴇ ᴛʀᴀɴǫᴜɪʟᴏ 🌌",
-
-"ǫᴜᴇ́ᴅᴀᴛᴇ ᴜɴ ʀᴀᴛᴏ ⏳",
-"ᴍᴇ ɢᴜsᴛᴀ ᴇsᴛᴏ 💙",
-"ᴀǫᴜɪ́ ᴇsᴛᴏʏ 🤍",
-"ᴀ ᴜɴᴀ ᴘᴀʟᴀʙʀᴀ ᴅᴇ ᴅɪsᴛᴀɴᴄɪᴀ 💬",
-"ᴄᴜᴀɴᴅᴏ ǫᴜɪᴇʀᴀs ✨",
-"sɪɴ ᴀᴘᴜʀᴏs 🌙",
-"ʏᴏ ᴛᴇ ʜᴀɢᴏ sᴏɴʀᴇɪʀ 😊",
-"ᴛᴜ́ ᴍᴇ ᴅɪʀᴀ́s 💙",
-"sɪ ɴᴏs ʟᴇᴇᴍᴏs 💬",
-"ǫᴜᴇ ᴄᴏɴᴛɪɴᴜᴇ ᴇsᴛᴇ ᴄᴜᴇɴᴛᴏ 🌌"
+"ɪʟᴜᴍɪɴᴀs ᴍɪ ᴠɪᴅᴀ ✨","ʟᴀ ᴇsᴛʀᴇʟʟᴀ ǫᴜᴇ ᴍᴀ́s ʙʀɪʟʟᴀ ᴇʀᴇs ᴛᴜ́ 🌟",
+"ᴇɴᴛʀᴇ ᴛᴀɴᴛᴀs ᴇsᴛʀᴇʟʟᴀs, ᴛᴜ́ 💫","ǫᴜɪᴇʀᴏ sᴇʀ ᴘᴀʀᴛᴇ ᴅᴇ ᴛᴜ ᴜɴɪᴠᴇʀsᴏ 🌌",
+"ɢʀᴀᴠᴇᴅᴀᴅ ᴛᴜʏᴀ 🪐","ᴘᴏʟᴠᴏ ᴅᴇ ᴇsᴛʀᴇʟʟᴀs ✨","ʟᴜᴢ sᴜᴀᴠᴇ 🌙",
+"¿ʏ sɪ ᴅᴇsᴄᴜʙʀɪᴍᴏs ᴜɴ ᴍᴜɴᴅᴏ? 🌍","ᴘᴇʀғᴇᴄᴛᴀ ᴄᴏᴍᴏ ᴜɴ ᴇᴄʟɪᴘsᴇ 🌘","ɴᴏᴄʜᴇ ᴄᴏɴ ᴛᴜ ɴᴏᴍʙʀᴇ 🌌"
 ];
 
-/* 🌌 GALAXIA */
-let particles=[];
-let total=4500, arms=4;
+let textSprites = [];
 
-for(let i=0;i<total;i++){
-    let radius=Math.random()*420;
-    let branch=(i%arms)*(Math.PI*2/arms);
-    let spin=radius*0.025;
-    let angle=branch+spin;
+function createText(text, angle, radius){
 
-    let offset=(Math.random()-0.5)*40;
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
 
-    let tx=Math.cos(angle)*(radius+offset);
-    let tz=Math.sin(angle)*(radius+offset);
-    let ty=(Math.random()-0.5)*30;
+    canvas.width = 512;
+    canvas.height = 128;
 
-    particles.push({
-        x:(Math.random()-0.5)*2500,
-        y:(Math.random()-0.5)*2500,
-        z:(Math.random()-0.5)*2500,
-        tx,ty,tz,
-        size:Math.random()*1.4
-    });
-}
+    ctx.fillStyle = "white";
+    ctx.font = "28px Arial";
+    ctx.fillText(text, 20, 64);
 
-/* ⏳ */
-let start=Date.now();
-let duration=6000;
-let globalRotation=0;
-
-function draw(){
-
-    ctx.fillStyle="black";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-
-    let t=(Date.now()-start)/duration;
-    if(t>1) t=1;
-
-    globalRotation+=0.002;
-
-    /* estrellas */
-    stars.forEach(s=>{
-        s.blink+=0.08;
-        let b=0.5+Math.sin(s.blink)*0.5;
-        drawPoint(s.x,s.y,s.z,`rgba(255,255,255,${b})`,s.size);
+    const texture = new THREE.CanvasTexture(canvas);
+    const material = new THREE.SpriteMaterial({
+        map: texture,
+        transparent: true
     });
 
-    /* galaxia */
-    particles.forEach(p=>{
-        let x=p.x+(p.tx-p.x)*t;
-        let y=p.y+(p.ty-p.y)*t;
-        let z=p.z+(p.tz-p.z)*t;
+    const sprite = new THREE.Sprite(material);
 
-        if(t===1){
-            let ang=Math.atan2(z,x)+globalRotation;
-            let dist=Math.sqrt(x*x+z*z);
-            x=Math.cos(ang)*dist;
-            z=Math.sin(ang)*dist;
-        }
+    sprite.position.set(
+        Math.cos(angle)*radius,
+        0,
+        Math.sin(angle)*radius
+    );
 
-        drawPoint(x,y,z,"rgb(120,170,255)",p.size);
+    sprite.scale.set(10,3,1);
+    sprite.material.opacity = 0;
+
+    galaxy.add(sprite);
+    textSprites.push(sprite);
+
+    let op = 0;
+    let fade = setInterval(()=>{
+        op += 0.05;
+        sprite.material.opacity = op;
+        if(op>=1) clearInterval(fade);
+    },50);
+}
+
+// aparición progresiva
+let fi = 0;
+setInterval(()=>{
+    if(!forming && fi < frases.length){
+        createText(frases[fi], fi*0.4, 10 + Math.random()*10);
+        fi++;
+    }
+},700);
+
+// ================= SHOOTING STARS =================
+let shooting = [];
+
+function createShooting(){
+    if(shooting.length >= 3) return;
+
+    let geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.Float32BufferAttribute([0,0,0],3));
+
+    let mat = new THREE.PointsMaterial({color:0xffffff,size:1});
+
+    let s = new THREE.Points(geo,mat);
+
+    s.position.set(
+        (Math.random()-0.5)*100,
+        (Math.random()-0.5)*100,
+        (Math.random()-0.5)*100
+    );
+
+    s.vel = new THREE.Vector3(
+        (Math.random()-0.5)*3,
+        (Math.random()-0.5)*3,
+        (Math.random()-0.5)*3
+    );
+
+    scene.add(s);
+    shooting.push(s);
+
+    setTimeout(()=>{
+        scene.remove(s);
+        shooting = shooting.filter(x=>x!==s);
+    },1200);
+}
+
+// ================= ANIMATE =================
+function animate(){
+    requestAnimationFrame(animate);
+
+    let elapsed = (Date.now() - startTime)/1000;
+
+    // FORMACION
+    if(forming){
+        let progress = Math.min(elapsed/6,1);
+        galaxy.scale.set(progress,progress,progress);
+        if(progress>=1) forming = false;
+    }
+
+    // movimiento
+    let speed = 0.8;
+
+    let dir = new THREE.Vector3();
+    camera.getWorldDirection(dir);
+
+    if(keys["w"]) camera.position.add(dir.clone().multiplyScalar(speed));
+    if(keys["s"]) camera.position.add(dir.clone().multiplyScalar(-speed));
+
+    let right = new THREE.Vector3().crossVectors(camera.up, dir).normalize();
+
+    if(keys["a"]) camera.position.add(right.clone().multiplyScalar(speed));
+    if(keys["d"]) camera.position.add(right.clone().multiplyScalar(-speed));
+
+    if(keys["q"]) camera.position.y += speed;
+    if(keys["e"]) camera.position.y -= speed;
+
+    camera.lookAt(0,0,0);
+
+    // rotaciones
+    galaxy.rotation.y += 0.0025;
+    stars.rotation.y += 0.0003;
+
+    // shooting stars
+    if(Math.random()<0.03) createShooting();
+
+    shooting.forEach(s=>{
+        s.position.add(s.vel.clone().multiplyScalar(2.5));
     });
 
-    requestAnimationFrame(draw);
+    renderer.render(scene,camera);
 }
 
-function drawPoint(x,y,z,color,size){
-    let cosY=Math.cos(angleY), sinY=Math.sin(angleY);
-    let dx=cosY*x - sinY*z;
-    let dz=sinY*x + cosY*z;
+animate();
 
-    let cosX=Math.cos(angleX), sinX=Math.sin(angleX);
-    let dy=cosX*y - sinX*dz;
-    dz=sinX*y + cosX*dz;
-
-    if(dz<-zoom+50) return;
-
-    let scale=zoom/(zoom+dz);
-
-    let px=dx*scale + canvas.width/2;
-    let py=dy*scale + canvas.height/2;
-
-    ctx.fillStyle=color;
-    ctx.beginPath();
-    ctx.arc(px,py,size*scale,0,Math.PI*2);
-    ctx.fill();
-}
-
-draw();
+// resize
+window.addEventListener("resize",()=>{
+    camera.aspect = innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth,window.innerHeight);
+});
 </script>
 
 </body>
